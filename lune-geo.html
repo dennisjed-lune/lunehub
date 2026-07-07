@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Lune Geo · Merchant Map</title>
+
+<!-- Leaflet + plugins (CDN) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+
+<!-- Fonts: Plus Jakarta Sans (workhorse) + Cormorant Garamond (display) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Cormorant+Garamond:ital,wght@1,500;1,600;1,700&display=swap">
+
+<style>
+/* ===== Lune design tokens (colors, typography, spacing, base) ===== */
+/* ============================================================
+   Lune — Color tokens
+   ------------------------------------------------------------
+   Source of truth: Lune UI Library + Category Icons (Figma) and
+   the Lune logo suite. Primary is emerald #10A37F (the crescent),
+   anchored by deep teal #002E2A and the near-black "ink" #070312.
+   ============================================================ */
+
+:root {
+  /* ---- Brand core ---- */
+  --lune-emerald:      #10A37F;  /* primary — the crescent / accent */
+  --lune-teal:         #002E2A;  /* deep forest teal — wordmark, dark surfaces */
+  --lune-teal-700:     #0A634D;  /* mid teal — category-icon green */
+  --lune-mint:         #99F2AC;  /* bright mint — success, highlights */
+  --lune-ink:          #070312;  /* near-black aubergine — dark canvas */
+  --lune-sea:          #469A93;  /* muted sea green — secondary accent */
+
+  /* ---- Emerald ramp (primary, from Figma opacity steps) ---- */
+  --primary-100:       #10A37F;
+  --primary-90:        rgba(16,163,127,0.90);
+  --primary-80:        rgba(16,163,127,0.80);
+  --primary-70:        rgba(16,163,127,0.70);
+  --primary-60:        rgba(16,163,127,0.60);
+  --primary-50:        rgba(16,163,127,0.50);
+  --primary-40:        rgba(16,163,127,0.40);
+  --primary-30:        rgba(16,163,127,0.30);
+  --primary-20:        rgba(16,163,127,0.20);
+  --primary-10:        rgba(16,163,127,0.10);
+
+  /* ---- Neutral ramp (cool, faintly teal-tinted greys) ---- */
+  --neutral-0:         #FFFFFF;
+  --neutral-25:        #F7F9F8;
+  --neutral-50:        #EEF2F1;
+  --neutral-100:       #E2E8E6;
+  --neutral-200:       #C9D3D0;
+  --neutral-300:       #A7B4B0;
+  --neutral-400:       #7E8E89;
+  --neutral-500:       #5C6B66;
+  --neutral-600:       #44524E;
+  --neutral-700:       #2E3A36;
+  --neutral-800:       #1B2421;
+  --neutral-900:       #0E1513;
+  --neutral-950:       #070312;
+
+  /* ---- Status (from the Figma status-pill set) ---- */
+  --status-success:    #99F2AC;  /* "Completed" */
+  --status-success-ink:#063D1B;
+  --status-warning:    #FBDA7D;  /* "Under Review" */
+  --status-warning-ink:#5A4205;
+  --status-info:       #5A9CB5;  /* informational (category palette) */
+  --status-info-ink:   #0C3543;
+  --status-error:      #F26076;  /* declined / error (category palette) */
+  --status-error-ink:  #5C0C18;
+
+  /* ---- Category accent hues (from Category Icons "Colours") ---- */
+  --cat-dining:        #FF7444;
+  --cat-grocery:       #E76F2E;
+  --cat-shopping:      #F26076;
+  --cat-wellness:      #F49BAB;
+  --cat-transport:     #5A9CB5;
+  --cat-travel:        #6F8F72;
+  --cat-financial:     #3852B4;
+  --cat-savings:       #A594F9;
+  --cat-income:        #0A634D;
+  --cat-household:     #C4A484;
+  --cat-student:       #B7BDF7;
+  --cat-misc:          #758A93;
+
+  /* ============================================================
+     Semantic aliases — light theme (default)
+     ============================================================ */
+  --bg-canvas:         var(--neutral-25);
+  --bg-surface:        var(--neutral-0);
+  --bg-raised:         var(--neutral-0);
+  --bg-sunken:         var(--neutral-50);
+  --bg-inverse:        var(--lune-ink);
+
+  --surface-card:      var(--neutral-0);
+  --surface-muted:     var(--neutral-50);
+  --surface-emerald:   var(--primary-10);
+
+  --text-primary:      var(--lune-teal);
+  --text-secondary:    var(--neutral-600);
+  --text-tertiary:     var(--neutral-400);
+  --text-on-emerald:   var(--neutral-0);
+  --text-on-inverse:   var(--neutral-0);
+  --text-link:         var(--lune-emerald);
+
+  --border-subtle:     var(--neutral-100);
+  --border-default:    var(--neutral-200);
+  --border-strong:     var(--neutral-300);
+  --border-emerald:    var(--lune-emerald);
+
+  --accent:            var(--lune-emerald);
+  --accent-hover:      #0E9173;
+  --accent-press:      #0B7C62;
+  --focus-ring:        rgba(16,163,127,0.35);
+}
+
+/* ============================================================
+   Dark theme — set data-theme="dark" on a wrapper or <html>
+   The Lune cover/cover-page use the ink canvas with white type
+   and emerald accents.
+   ============================================================ */
+[data-theme="dark"] {
+  --bg-canvas:         var(--lune-ink);
+  --bg-surface:        #110B1F;
+  --bg-raised:         #181023;
+  --bg-sunken:         #0B0716;
+  --bg-inverse:        var(--neutral-0);
+
+  --surface-card:      #14101F;
+  --surface-muted:     #1B1528;
+  --surface-emerald:   rgba(16,163,127,0.16);
+
+  --text-primary:      var(--neutral-0);
+  --text-secondary:    #B8B2C4;
+  --text-tertiary:     #7C7689;
+  --text-on-emerald:   var(--lune-ink);
+  --text-on-inverse:   var(--lune-teal);
+  --text-link:         var(--lune-mint);
+
+  --border-subtle:     rgba(255,255,255,0.08);
+  --border-default:    rgba(255,255,255,0.14);
+  --border-strong:     rgba(255,255,255,0.24);
+  --border-emerald:    var(--lune-emerald);
+
+  --accent:            var(--lune-emerald);
+  --accent-hover:      #2BB996;
+  --accent-press:      #46A893;
+  --focus-ring:        rgba(153,242,172,0.40);
+}
+
+/* ============================================================
+   Lune — Typography tokens
+   ------------------------------------------------------------
+   Type scale lifted directly from the Lune UI Library type spec.
+   Body family: Plus Jakarta Sans. Display: Cormorant Garamond
+   (Bold Italic — reserved for hero / editorial moments).
+   Every step is set at 150% line-height per the spec, except the
+   display face which runs tight at 100%.
+   ============================================================ */
+
+:root {
+  /* ---- Families ---- */
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Cormorant Garamond", ui-serif, Georgia,
+                  "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---- Weights ---- */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+  --weight-extra:   800;
+
+  /* ---- Type scale (px) — name : size / line-height ---- */
+  --text-h1-size: 36px;   --text-h1-lh: 1.5;
+  --text-h2-size: 32px;   --text-h2-lh: 1.5;
+  --text-h3-size: 28px;   --text-h3-lh: 1.5;
+  --text-h4-size: 24px;   --text-h4-lh: 1.5;
+  --text-h5-size: 20px;   --text-h5-lh: 1.5;
+  --text-title1-size: 18px; --text-title1-lh: 1.5;
+  --text-title2-size: 16px; --text-title2-lh: 1.5;
+  --text-body-size: 14px; --text-body-lh: 1.5;
+  --text-caption-size: 12px; --text-caption-lh: 1.5;
+
+  /* Display (Cormorant Garamond, Bold Italic, tight) */
+  --text-display-size: 88px; --text-display-lh: 1.0;
+
+  /* ---- Letter-spacing ---- */
+  --tracking-tight: -0.02em;   /* large sans headings + hero */
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;     /* uppercase pill / eyebrow labels */
+}
+
+/* ============================================================
+   Type helper classes — apply directly or use as reference.
+   ============================================================ */
+.lune-display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-style: italic;
+  font-size: var(--text-display-size);
+  line-height: var(--text-display-lh);
+  letter-spacing: var(--tracking-tight);
+}
+.lune-h1 { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-h1-size); line-height: var(--text-h1-lh); letter-spacing: var(--tracking-tight); }
+.lune-h2 { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-h2-size); line-height: var(--text-h2-lh); letter-spacing: var(--tracking-tight); }
+.lune-h3 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h3-size); line-height: var(--text-h3-lh); }
+.lune-h4 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h4-size); line-height: var(--text-h4-lh); }
+.lune-h5 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h5-size); line-height: var(--text-h5-lh); }
+.lune-title1 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-title1-size); line-height: var(--text-title1-lh); }
+.lune-title2 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-title2-size); line-height: var(--text-title2-lh); }
+.lune-body { font-family: var(--font-sans); font-weight: var(--weight-regular);
+  font-size: var(--text-body-size); line-height: var(--text-body-lh); }
+.lune-caption { font-family: var(--font-sans); font-weight: var(--weight-regular);
+  font-size: var(--text-caption-size); line-height: var(--text-caption-lh); }
+.lune-eyebrow { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-caption-size); line-height: 1; letter-spacing: var(--tracking-wide);
+  text-transform: uppercase; }
+
+/* ============================================================
+   Lune — Spacing, radius, elevation & motion tokens
+   ------------------------------------------------------------
+   Spacing is a 4px base scale (Figma gaps observed: 8/20/24/32/48/64).
+   Radii run from tight inputs up to the fully-rounded status pills
+   (the Figma pills use a 72px radius = effectively pill-shaped).
+   ============================================================ */
+
+:root {
+  /* ---- Spacing (4px base) ---- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---- Radii ---- */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;   /* default control / card radius */
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-pill: 999px;  /* status pills, chips, avatars */
+
+  /* ---- Border widths ---- */
+  --border-hairline: 1px;
+  --border-thick:    1.5px;
+
+  /* ---- Elevation — soft, cool-toned shadows (teal-tinted) ---- */
+  --shadow-xs:  0 1px 2px rgba(7,3,18,0.06);
+  --shadow-sm:  0 1px 3px rgba(7,3,18,0.08), 0 1px 2px rgba(7,3,18,0.04);
+  --shadow-md:  0 4px 12px rgba(7,3,18,0.08), 0 2px 4px rgba(7,3,18,0.04);
+  --shadow-lg:  0 12px 32px rgba(7,3,18,0.12), 0 4px 8px rgba(7,3,18,0.05);
+  --shadow-xl:  0 24px 64px rgba(7,3,18,0.16);
+  --shadow-emerald: 0 8px 24px rgba(16,163,127,0.28);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
+  --ease-emphasis: cubic-bezier(0.3, 0.7, 0, 1); /* @kind other */
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1);   /* @kind other */
+  --dur-fast:   120ms;  /* @kind other */
+  --dur-base:   200ms;  /* @kind other */
+  --dur-slow:   320ms;  /* @kind other */
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --container-prose: 680px;
+}
+
+/* ============================================================
+   Lune — base / reset layer
+   A light, opinionated normalize that wires the brand defaults
+   onto bare HTML. Optional for consumers but keeps specimens and
+   UI kits consistent.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-lh);
+  font-weight: var(--weight-regular);
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+}
+
+h1, h2, h3, h4, h5, h6, p, figure { margin: 0; }
+
+a { color: var(--text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+::selection { background: var(--lune-mint); color: var(--lune-teal); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+img, svg { display: block; max-width: 100%; }
+
+code, pre, kbd { font-family: var(--font-mono); }
+
+
+/* ===== App chrome (app.css) ===== */
+/* ============================================================
+   Lune Geo — application chrome
+   All values resolve to Lune design tokens. Theme flips via
+   [data-theme="dark"] on .lg-app (tokens handle the rest).
+   ============================================================ */
+
+.lg-app {
+  position: fixed; inset: 0;
+  display: flex;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  --lg-accent: var(--lune-emerald);
+  --lg-accent-soft: rgba(16,163,127,0.14);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ---------------- Left rail ---------------- */
+.lg-rail {
+  width: 64px; flex: none;
+  background: var(--lune-ink);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 0;
+  gap: 6px;
+  z-index: 1200;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.lg-rail__logo { width: 34px; height: 34px; margin-bottom: 18px; display:block; }
+.lg-rail__btn {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.55);
+  background: transparent; border: none; cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+  position: relative;
+}
+.lg-rail__btn:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.lg-rail__btn.is-active { color: #fff; background: var(--lg-accent-soft); }
+.lg-rail__btn.is-active::before {
+  content: ""; position: absolute; left: -16px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 22px; border-radius: 0 3px 3px 0; background: var(--lg-accent);
+}
+.lg-rail__btn svg { width: 20px; height: 20px; }
+.lg-rail__spacer { flex: 1; }
+.lg-rail__avatar {
+  width: 34px; height: 34px; border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--lune-emerald), var(--lune-sea));
+  color: #fff; font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ---------------- Main column ---------------- */
+.lg-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* ---------------- Top bar ---------------- */
+.lg-topbar {
+  height: 64px; flex: none;
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 20px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 900;
+}
+.lg-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.lg-title { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; color: var(--text-primary); }
+.lg-topbar__title { display: flex; flex-direction: column; gap: 2px; flex: none; }
+.lg-title { white-space: nowrap; }
+
+.lg-search {
+  flex: 1; max-width: 360px;
+  display: flex; align-items: center; gap: 10px;
+  height: 40px; padding: 0 14px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.lg-search:focus-within { border-color: var(--lg-accent); box-shadow: 0 0 0 3px var(--focus-ring); }
+.lg-search input {
+  flex: 1; border: none; background: none; outline: none;
+  font-family: var(--font-sans); font-size: 14px; color: var(--text-primary);
+}
+.lg-search input::placeholder { color: var(--text-tertiary); }
+.lg-search svg { width: 16px; height: 16px; flex: none; color: var(--text-tertiary); }
+
+.lg-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; white-space: nowrap;
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.lg-chip:hover { border-color: var(--border-strong); }
+.lg-chip svg { width: 15px; height: 15px; color: var(--text-tertiary); }
+.lg-chip strong { color: var(--text-primary); font-weight: 700; }
+
+.lg-topbar__spacer { flex: 1; }
+
+/* stat cluster */
+.lg-stats { display: flex; align-items: stretch; gap: 0; }
+.lg-stat { display: flex; flex-direction: column; gap: 1px; padding: 0 18px; position: relative; }
+.lg-stat + .lg-stat::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--border-subtle);
+}
+.lg-stat__val { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1.2; }
+.lg-stat__lbl { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+
+/* responsive topbar: shed stats before clipping */
+@media (max-width: 1340px) { .lg-stat:nth-child(4) { display: none; } }
+@media (max-width: 1180px) { .lg-stat:nth-child(3) { display: none; } .lg-search { max-width: 260px; } }
+@media (max-width: 1010px) { .lg-stats { display: none; } }
+.lg-delta { font-size: 11px; font-weight: 700; }
+.lg-delta.up { color: var(--lune-emerald); }
+.lg-delta.down { color: var(--status-error); }
+
+.lg-iconbtn {
+  width: 40px; height: 40px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md); border: 1px solid var(--border-default);
+  background: var(--bg-surface); color: var(--text-secondary); cursor: pointer;
+  transition: border-color var(--dur-fast), color var(--dur-fast), background var(--dur-fast);
+}
+.lg-iconbtn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.lg-iconbtn svg { width: 18px; height: 18px; }
+
+/* ---------------- Map stage ---------------- */
+.lg-stage { position: relative; flex: 1; overflow: hidden; }
+#map { position: absolute; inset: 0; background: var(--bg-sunken); }
+
+/* Overlay cards */
+.lg-card {
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Filter / legend panel */
+.lg-filters {
+  position: absolute; top: 16px; width: 268px; z-index: 600;
+  padding: 16px;
+  max-height: calc(100% - 184px); /* leave room for zoom stack below */
+  display: flex; flex-direction: column;
+  overflow-y: auto; overscroll-behavior: contain;
+}
+.lg-filters.side-left { left: 16px; }
+.lg-filters.side-right { right: 16px; }
+
+.lg-seg { display: flex; gap: 4px; padding: 4px; background: var(--bg-sunken); border-radius: var(--radius-md); }
+.lg-seg button {
+  flex: 1; height: 32px; border: none; background: transparent; cursor: pointer;
+  border-radius: var(--radius-sm); font-family: var(--font-sans);
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background var(--dur-fast), color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.lg-seg button svg { width: 14px; height: 14px; }
+.lg-seg button.is-active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+
+.lg-sectlabel {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 18px 0 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.lg-sectlabel button { border: none; background: none; cursor: pointer; font-family: var(--font-sans);
+  font-size: 11px; font-weight: 700; color: var(--lg-accent); text-transform: none; letter-spacing: 0; }
+
+.lg-catlist { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; margin: 0 -6px; padding: 0 6px; flex: 1 1 auto; min-height: 40px; max-height: 300px; }
+.lg-catrow {
+  display: flex; align-items: center; gap: 10px;
+  height: 36px; padding: 0 8px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: background var(--dur-fast);
+}
+.lg-catrow:hover { background: var(--bg-sunken); }
+.lg-catrow.is-off { opacity: 0.4; }
+.lg-catdot { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.lg-catico { width: 15px; height: 15px; flex: none; }
+.lg-catname { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.lg-catcount { font-size: 12px; font-weight: 600; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.lg-catvol { font-size: 12px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.lg-seg--home { margin-bottom: 2px; }
+.lg-seg--home button { font-weight: 700; }
+.lg-seg--lens button { font-size: 11.5px; padding: 0 4px; }
+
+/* brand logo tile (monogram placeholder — swap for real <img> art) */
+.lg-logo { display: inline-flex; align-items: center; justify-content: center; border-radius: 7px;
+  color: #fff; font-weight: 800; letter-spacing: -0.03em; line-height: 1; flex: none; box-shadow: var(--shadow-xs); }
+
+/* bubble-size legend */
+.lg-legend { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle); }
+.lg-legend__row { display: flex; align-items: center; gap: 12px; }
+.lg-bubbles { display: flex; align-items: flex-end; gap: 8px; }
+.lg-bubble { border-radius: 50%; border: 1.5px solid var(--lg-accent); background: var(--lg-accent-soft); }
+.lg-legend__cap { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.lg-heatbar { height: 10px; flex: 1; border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, rgba(58,82,180,0.4), #9B5DE0, #F2607A, #FF7A45, #FFE08A); }
+.lg-flowkey { width: 34px; height: 0; border-top: 2px dashed var(--lg-accent); flex: none; }
+
+/* ---------------- category bars (city detail) ---------------- */
+.lg-catbars { padding: 0 20px; margin-bottom: 22px; display: flex; flex-direction: column; gap: 11px; }
+.lg-catbar { display: flex; align-items: center; gap: 10px; }
+.lg-catbar__name { width: 68px; font-size: 12.5px; font-weight: 600; color: var(--text-primary); flex: none; }
+.lg-catbar__track { flex: 1; height: 8px; background: var(--bg-sunken); border-radius: var(--radius-pill); overflow: hidden; }
+.lg-catbar__track span { display: block; height: 100%; border-radius: var(--radius-pill); transition: width var(--dur-slow) var(--ease-emphasis); transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) {
+  .lg-catbar__track span { animation: lg-grow-x 0.7s var(--ease-emphasis) backwards; animation-delay: 0.2s; }
+}
+@keyframes lg-grow-x { from { transform: scaleX(0); } }
+.lg-catbar__pct { width: 34px; text-align: right; font-size: 12px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.lg-catbar__amt { width: 52px; text-align: right; font-size: 12.5px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* origin → destination corridor strip */
+.lg-corridor { margin: 14px 20px 0; padding: 11px 14px; display: flex; align-items: center; gap: 10px;
+  background: var(--lg-accent-soft); border-radius: var(--radius-md); }
+.lg-corridor__node { font-size: 13.5px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em; }
+.lg-corridor__node.dest { color: var(--lg-accent); }
+[data-theme="dark"] .lg-corridor__node.dest { color: var(--text-primary); }
+.lg-corridor__arrow { color: var(--lg-accent); display: flex; }
+.lg-corridor__val { margin-left: auto; font-size: 14px; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+/* ---------------- origin-mix bar ---------------- */
+.lg-origin { padding: 0 20px; margin-bottom: 22px; }
+.lg-origin__bar { display: flex; height: 12px; border-radius: var(--radius-pill); overflow: hidden; gap: 2px; }
+.lg-origin__bar span { display: block; height: 100%; }
+.lg-origin__bar .uae { background: var(--lg-accent); }
+.lg-origin__bar .ksa { background: var(--lune-sea); }
+.lg-origin__keys { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.lg-origin__keys span { display: flex; align-items: center; gap: 7px; }
+.lg-origin__keys i { width: 10px; height: 10px; border-radius: 3px; }
+.lg-origin__keys i.uae { background: var(--lg-accent); }
+.lg-origin__keys i.ksa { background: var(--lune-sea); }
+
+/* ---------------- switch + demographics switch ---------------- */
+.lg-switch { width: 38px; height: 22px; border-radius: var(--radius-pill); border: none; cursor: pointer;
+  background: var(--border-default); position: relative; flex: none; transition: background var(--dur-fast); padding: 0; }
+.lg-switch span { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; box-shadow: var(--shadow-xs); transition: transform var(--dur-base) var(--ease-emphasis); }
+.lg-switch.on { background: var(--lg-accent); }
+.lg-switch.on span { transform: translateX(16px); }
+
+.lg-demoswitch { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 12px;
+  background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); flex: none; }
+.lg-demoswitch > svg { width: 18px; height: 18px; color: var(--text-secondary); flex: none; }
+.lg-demoswitch__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.lg-demoswitch__txt span { font-size: 13px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lg-demoswitch__txt small { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------------- category change + brand share ---------------- */
+.lg-catbar__chg { width: 40px; text-align: right; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lg-catbar__chg.up { color: var(--lune-emerald); }
+.lg-catbar__chg.down { color: var(--status-error); }
+[data-theme="dark"] .lg-catbar__chg.up { color: var(--lune-mint); }
+.lg-txn__share { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+
+/* ---------------- demographics block ---------------- */
+.lg-demo { padding: 0 20px; margin-bottom: 22px; }
+.lg-demo__lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 16px 0 10px; }
+.lg-demo__lbl:first-child { margin-top: 4px; }
+.lg-demo__age { display: flex; align-items: flex-end; gap: 8px; height: 92px; }
+.lg-agecol { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
+.lg-agecol__bar { flex: 1; width: 100%; display: flex; align-items: flex-end;
+  background: var(--bg-sunken); border-radius: var(--radius-xs); overflow: hidden; }
+.lg-agecol__bar span { width: 100%; background: var(--lg-accent); border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  transition: height var(--dur-slow) var(--ease-emphasis); }
+.lg-agecol__pct { font-size: 11px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.lg-agecol__band { font-size: 10px; color: var(--text-tertiary); white-space: nowrap; }
+
+.lg-gender__bar { display: flex; height: 14px; border-radius: var(--radius-pill); overflow: hidden; gap: 2px; }
+.lg-gender__bar .f { background: var(--lg-accent); }
+.lg-gender__bar .m { background: var(--neutral-300); }
+[data-theme="dark"] .lg-gender__bar .m { background: var(--neutral-600); }
+.lg-gender__keys { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.lg-gender__keys span { display: flex; align-items: center; gap: 7px; }
+.lg-gender__keys i { width: 10px; height: 10px; border-radius: 3px; }
+.lg-gender__keys i.f { background: var(--lg-accent); }
+.lg-gender__keys i.m { background: var(--neutral-300); }
+[data-theme="dark"] .lg-gender__keys i.m { background: var(--neutral-600); }
+
+.lg-nats { display: flex; flex-wrap: wrap; gap: 8px; }
+.lg-nat { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px;
+  background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-pill);
+  font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+.lg-nat b { font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+/* ===== mini bar chart ===== */
+.lg-minibars { display: flex; align-items: flex-end; width: 100%; max-width: 120px; }
+.lg-minibars span { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transform-origin: bottom; }
+@media (prefers-reduced-motion: no-preference) {
+  .lg-minibars span { animation: lg-grow-y 0.6s var(--ease-emphasis) backwards; }
+  .lg-minibars span:nth-child(odd) { animation-delay: 0.12s; }
+  .lg-minibars span:nth-child(even) { animation-delay: 0.22s; }
+}
+@keyframes lg-grow-y { from { transform: scaleY(0); } }
+
+/* ===== elevated demographics (USP) ===== */
+.lg-demo { margin: 16px 20px 22px; padding: 16px; background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); position: relative; }
+.lg-demo::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px;
+  border-radius: 0 3px 3px 0; background: var(--lg-accent); }
+.lg-demo__title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+  color: var(--text-primary); margin-bottom: 14px; }
+.lg-demo__title svg { color: var(--lg-accent); }
+.lg-demo__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.lg-demo__stats > div { display: flex; flex-direction: column; gap: 2px; }
+.lg-demo__big { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); line-height: 1.05; }
+.lg-demo__cap { font-size: 10.5px; color: var(--text-tertiary); font-weight: 600; }
+.lg-demo__lbl { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 0 0 10px; }
+.lg-demo .lg-demo__lbl + * { margin-bottom: 16px; }
+.lg-demo > .lg-demo__lbl:not(:first-of-type) { margin-top: 4px; }
+
+/* ===== brand trend rows ===== */
+.lg-brands { padding: 0 20px 8px; display: flex; flex-direction: column; gap: 6px; }
+.lg-brandrow { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: var(--radius-sm); }
+.lg-brandrow:hover { background: var(--bg-sunken); }
+.lg-brandrow__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.lg-brandrow__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.lg-brandrow__name { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.lg-brandrow__amt { font-size: 13.5px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.lg-brandrow__bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.lg-brandrow__meta { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.lg-brandrow__bottom .lg-minibars { max-width: 110px; height: 26px; }
+
+/* ===== generic page shell ===== */
+.lg-page { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 28px; background: var(--bg-canvas); }
+.lg-page__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.lg-page__title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); margin-top: 3px; }
+
+.lg-empty { display: flex; align-items: center; justify-content: center; }
+.lg-empty__box { text-align: center; color: var(--text-tertiary); }
+.lg-empty__box svg { color: var(--lg-accent); margin-bottom: 14px; }
+.lg-empty__t { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.lg-empty__s { font-size: 13px; margin-top: 6px; }
+
+/* ===== Compare ===== */
+.lg-cmpscroll { overflow-x: auto; padding-bottom: 8px; }
+.lg-cmpgrid { display: grid; gap: 16px; }
+.lg-col { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  padding: 16px; box-shadow: var(--shadow-sm); }
+.lg-col__head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.lg-cmp-select { flex: 1; min-width: 0; height: 36px; padding: 0 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-primary);
+  font-family: var(--font-sans); font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.lg-col__rm { width: 30px; height: 30px; flex: none; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+  background: var(--bg-surface); color: var(--text-tertiary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.lg-col__rm:hover { color: var(--status-error); border-color: var(--status-error); }
+.lg-col__pill { margin-bottom: 14px; }
+.lg-col__kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 18px; }
+.lg-col__kpi { background: var(--surface-card); padding: 11px 12px; display: flex; flex-direction: column; gap: 3px; }
+.lg-col__kpi span { font-size: 10.5px; color: var(--text-tertiary); font-weight: 600; }
+.lg-col__kpi b { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.lg-col__lbl { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 0 0 12px; }
+.lg-catbars--cmp { margin: 0 0 18px; padding: 0; }
+.lg-catbars--cmp .lg-catbar__name { width: 90px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lg-col__demo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.lg-col__demostat { display: flex; flex-direction: column; gap: 2px; }
+.lg-col__demostat b { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--text-primary); }
+.lg-col__demostat span { font-size: 10px; color: var(--text-tertiary); font-weight: 600; }
+.lg-col .lg-demo__age { margin-bottom: 18px; }
+.lg-col__brands { display: flex; flex-direction: column; gap: 8px; }
+.lg-col__brand { display: flex; align-items: center; gap: 10px; }
+.lg-col__brand .nm { flex: 1; font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.lg-col__brand .amt { font-size: 13px; font-weight: 700; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+/* ===== Segments ===== */
+.lg-page--split { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+.lg-seghead { margin-bottom: 20px; }
+.lg-page__sub { font-size: 13px; color: var(--text-tertiary); font-weight: 600; margin-top: 6px; }
+.lg-page--split-inner { grid-template-columns: 290px 1fr; }
+.lg-seglist { display: flex; flex-direction: column; gap: 14px; }
+.lg-segsearch { display: flex; align-items: center; gap: 9px; height: 38px; padding: 0 12px;
+  background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: var(--text-tertiary); }
+.lg-segsearch input { border: none; outline: none; background: transparent; font-family: var(--font-sans);
+  font-size: 13px; font-weight: 600; color: var(--text-primary); width: 100%; }
+.lg-segsearch input::placeholder { color: var(--text-tertiary); font-weight: 600; }
+.lg-seggroup { display: flex; flex-direction: column; gap: 8px; }
+.lg-seggroup__lab { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-tertiary); padding: 2px 2px 0; }
+.lg-seggroup__empty { font-size: 13px; color: var(--text-tertiary); font-weight: 600; padding: 10px 2px; }
+.lg-segdetail__status { margin-bottom: 8px; }
+.lg-modal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center;
+  background: rgba(7,3,18,0.34); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.lg-modal__card { width: min(420px, calc(100vw - 40px)); max-height: calc(100vh - 48px); overflow-y: auto;
+  background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  padding: 22px 22px 20px; box-shadow: 0 40px 90px -40px rgba(7,3,18,0.5); }
+.lg-modal__head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.lg-modal__title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); }
+.lg-modal__x { border: 1px solid var(--border-subtle); background: transparent; color: var(--text-tertiary);
+  width: 30px; height: 30px; border-radius: var(--radius-md); cursor: pointer; display: grid; place-items: center; }
+.lg-modal__x:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.lg-modal__lab { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-tertiary); margin: 14px 0 6px; }
+.lg-modal__input { width: 100%; height: 38px; padding: 0 12px; font-family: var(--font-sans); font-size: 13.5px;
+  font-weight: 600; color: var(--text-primary); background: var(--surface-card);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); outline: none; }
+.lg-modal__input:focus { border-color: var(--lg-accent); box-shadow: 0 0 0 3px var(--focus-ring); }
+select.lg-modal__input { appearance: auto; }
+.lg-modal__seg { display: flex; gap: 6px; }
+.lg-modal__seg button { flex: 1; height: 34px; border: 1px solid var(--border-subtle); background: var(--surface-card);
+  border-radius: var(--radius-md); font-family: var(--font-sans); font-size: 12.5px; font-weight: 700;
+  color: var(--text-secondary); cursor: pointer; }
+.lg-modal__seg button.is-active { border-color: var(--lg-accent); color: var(--lg-accent); background: var(--lg-accent-soft); }
+.lg-modal__preview { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; margin-top: 18px; }
+.lg-modal__preview > div { background: var(--surface-card); padding: 12px 14px; display: flex; flex-direction: column; gap: 3px; }
+.lg-modal__preview span { font-size: 10.5px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+.lg-modal__preview b { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.lg-modal__foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.lg-modal__foot .lg-btn { flex: none; padding: 0 16px; }
+.lg-segfoot { font-size: 12px; color: var(--text-tertiary); font-weight: 600; margin: -8px 0 20px; }
+.lg-segitem { display: flex; align-items: center; gap: 11px; padding: 13px 14px; text-align: left; cursor: pointer;
+  background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  font-family: var(--font-sans); transition: border-color var(--dur-fast), box-shadow var(--dur-fast); }
+.lg-segitem:hover { border-color: var(--border-strong); }
+.lg-segitem.is-active { border-color: var(--lg-accent); box-shadow: 0 0 0 1px var(--lg-accent); }
+.lg-segitem .lg-catdot { width: 10px; height: 10px; border-radius: 3px; }
+.lg-segitem__b { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lg-segitem__b .nm { font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lg-segitem__b .mt { font-size: 11.5px; color: var(--text-tertiary); font-weight: 600; }
+.lg-segstatus { font-size: 10px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: var(--radius-pill); flex: none; }
+.lg-segstatus.active { background: rgba(16,163,127,0.16); color: #0A634D; }
+.lg-segstatus.paused { background: var(--surface-muted); color: var(--text-tertiary); }
+.lg-segstatus.draft { background: var(--lg-accent-soft); color: var(--lg-accent); }
+[data-theme="dark"] .lg-segstatus.active { color: var(--lune-mint); }
+
+.lg-segdetail { background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
+  padding: 24px; box-shadow: var(--shadow-sm); }
+.lg-segdetail__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.lg-eyebrow--draft { color: var(--lg-accent); }
+.lg-eyebrow--active { color: var(--lune-emerald); }
+.lg-eyebrow--paused { color: var(--text-tertiary); }
+.lg-seg-actions { display: flex; gap: 10px; flex: none; }
+.lg-seg-actions .lg-btn { flex: none; padding: 0 16px; }
+.lg-segchips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.lg-chip2 { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 13px;
+  background: var(--bg-sunken); border: 1px solid var(--border-subtle); border-radius: var(--radius-pill);
+  font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.lg-chip2 i { width: 9px; height: 9px; border-radius: 50%; }
+.lg-segkpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; margin-bottom: 22px; }
+.lg-segkpi { background: var(--surface-card); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.lg-segkpi span { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.lg-segkpi b { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.lg-segcols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.lg-segcard { background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 4px 0; }
+.lg-segcard .lg-demo { margin: 12px; }
+.lg-segcard .lg-demo::before { display: none; }
+.lg-segcard > .lg-demo__title { padding: 14px 16px 4px; }
+@media (max-width: 1100px) { .lg-segcols { grid-template-columns: 1fr; } .lg-page--split { grid-template-columns: 260px 1fr; } }
+
+/* Map zoom controls (custom) */
+.lg-zoom { position: absolute; bottom: 24px; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.lg-zoom.side-left { left: 16px; }
+.lg-zoom.side-right { right: 16px; }
+.lg-zoom button {
+  width: 40px; height: 40px; border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  color: var(--text-primary); cursor: pointer; border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);
+  transition: background var(--dur-fast);
+}
+.lg-zoom button:hover { background: var(--bg-surface); }
+.lg-zoom button svg { width: 18px; height: 18px; }
+.lg-zoom .pair { display: flex; flex-direction: column; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-md); }
+.lg-zoom .pair button { border-radius: 0; box-shadow: none; }
+.lg-zoom .pair button:first-child { border-bottom: none; }
+
+/* ---------------- Merchant detail panel ---------------- */
+.lg-detail {
+  position: absolute; top: 16px; bottom: 16px; width: 372px; z-index: 700;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.lg-detail.side-right { right: 16px; }
+.lg-detail.side-left { left: 16px; }
+/* Hidden state must not depend on an animation timeline: hard-hide. */
+.lg-detail.is-hidden { display: none; }
+/* Transform-only entrance from a small offset — a frozen timeline leaves the
+   panel 24px offset but fully visible (never opacity-hidden or offscreen). */
+@media (prefers-reduced-motion: no-preference) {
+  .lg-detail.side-right:not(.is-hidden) { animation: lg-slide-r 0.4s var(--ease-emphasis) backwards; }
+  .lg-detail.side-left:not(.is-hidden) { animation: lg-slide-l 0.4s var(--ease-emphasis) backwards; }
+}
+@keyframes lg-slide-r { from { transform: translateX(24px); } }
+@keyframes lg-slide-l { from { transform: translateX(-24px); } }
+
+.lg-detail__scroll { overflow-y: auto; flex: 1; }
+
+/* staggered entrance for panel content (visible end-state is base; animate FROM hidden) */
+@media (prefers-reduced-motion: no-preference) {
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > * { animation: lg-rise 0.45s var(--ease-emphasis) backwards; }
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > *:nth-child(2) { animation-delay: 0.05s; }
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > *:nth-child(3) { animation-delay: 0.1s; }
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > *:nth-child(4) { animation-delay: 0.15s; }
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > *:nth-child(5) { animation-delay: 0.2s; }
+  .lg-detail:not(.is-hidden) .lg-detail__scroll > *:nth-child(n+6) { animation-delay: 0.25s; }
+}
+@keyframes lg-rise { from { transform: translateY(10px); } }
+.lg-detail__head { padding: 20px 20px 16px; position: relative; }
+.lg-detail__close {
+  position: absolute; top: 16px; right: 16px; width: 30px; height: 30px;
+  border: none; border-radius: var(--radius-sm); background: var(--bg-sunken);
+  color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.lg-detail__close:hover { background: var(--border-subtle); color: var(--text-primary); }
+.lg-detail__close svg { width: 14px; height: 14px; }
+
+.lg-merch-id { display: flex; align-items: center; gap: 14px; padding-right: 36px; }
+.lg-merch-logo {
+  width: 52px; height: 52px; border-radius: var(--radius-md); flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff;
+}
+.lg-merch-name { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); line-height: 1.2; }
+.lg-merch-sub { font-size: 13px; color: var(--text-secondary); margin-top: 3px; display: flex; align-items: center; gap: 8px; }
+
+.lg-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 24px; padding: 0 10px; border-radius: var(--radius-pill);
+  font-size: 12px; font-weight: 600;
+}
+.lg-pill svg, .lg-pill .lg-catico { width: 12px; height: 12px; }
+
+.lg-conf {
+  margin: 16px 20px 0; padding: 12px 14px;
+  background: var(--bg-sunken); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12.5px; color: var(--text-secondary);
+}
+.lg-conf svg { width: 16px; height: 16px; color: var(--lg-accent); flex: none; }
+.lg-conf b { font-weight: 700; }
+
+.lg-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin: 20px; background: var(--border-subtle);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; }
+.lg-kpi { background: var(--bg-surface); padding: 14px; }
+.lg-kpi__lbl { font-size: 11px; color: var(--text-tertiary); font-weight: 600; }
+.lg-kpi__val { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary);
+  font-variant-numeric: tabular-nums; margin-top: 4px; }
+
+.lg-sub-h { padding: 0 20px; font-size: 13px; font-weight: 700; color: var(--text-primary);
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lg-sub-h span { font-size: 12px; font-weight: 600; color: var(--text-tertiary); }
+
+/* sparkline */
+.lg-spark { padding: 0 20px; margin-bottom: 24px; }
+.lg-spark__bars { display: flex; align-items: flex-end; gap: 6px; height: 64px; }
+.lg-spark__bar { flex: 1; border-radius: 3px 3px 0 0; background: var(--lg-accent); opacity: 0.85;
+  transition: height var(--dur-slow) var(--ease-emphasis); min-height: 3px; transform-origin: bottom; }
+@media (prefers-reduced-motion: no-preference) {
+  .lg-spark__bar { animation: lg-grow-y 0.6s var(--ease-emphasis) backwards; }
+  .lg-spark__bar:nth-child(2n) { animation-delay: 0.08s; }
+  .lg-spark__bar:nth-child(3n) { animation-delay: 0.16s; }
+}
+.lg-spark__bar.last { opacity: 1; }
+.lg-spark__axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-tertiary); margin-top: 6px; }
+
+/* transactions */
+.lg-txns { padding: 0 12px 8px; }
+.lg-txn { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--radius-sm); }
+.lg-txn:hover { background: var(--bg-sunken); }
+.lg-txn__av { width: 30px; height: 30px; border-radius: var(--radius-pill); flex: none;
+  background: var(--bg-sunken); color: var(--text-secondary); font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; }
+.lg-txn__body { flex: 1; min-width: 0; }
+.lg-txn__name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.lg-txn__meta { font-size: 11px; color: var(--text-tertiary); }
+.lg-txn__amt { font-size: 13px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+.lg-status { display: inline-flex; align-items: center; gap: 5px; height: 20px; padding: 0 8px;
+  border-radius: var(--radius-pill); font-size: 10.5px; font-weight: 700; }
+.lg-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.lg-status.completed { background: rgba(16,163,127,0.16); color: #0A634D; }
+.lg-status.pending { background: rgba(251,218,125,0.28); color: var(--status-warning-ink); }
+.lg-status.review { background: rgba(242,96,118,0.18); color: var(--status-error-ink); }
+[data-theme="dark"] .lg-status.completed { color: var(--lune-mint); }
+[data-theme="dark"] .lg-status.pending { color: var(--status-warning); }
+[data-theme="dark"] .lg-status.review { color: #F49BAB; }
+
+.lg-detail__foot { padding: 14px 20px; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; }
+.lg-btn {
+  flex: 1; height: 40px; border-radius: var(--radius-md); border: none; cursor: pointer;
+  font-family: var(--font-sans); font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: filter var(--dur-fast), background var(--dur-fast);
+}
+.lg-btn svg { width: 15px; height: 15px; }
+.lg-btn--primary { background: var(--lg-accent); color: #fff; }
+.lg-btn--primary:hover { filter: brightness(1.06); }
+.lg-btn--ghost { background: var(--bg-sunken); color: var(--text-primary); }
+.lg-btn--ghost:hover { background: var(--border-subtle); }
+
+/* empty hint when nothing selected */
+.lg-hint {
+  position: absolute; bottom: 24px; z-index: 500;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+}
+.lg-hint svg { width: 15px; height: 15px; color: var(--lg-accent); }
+
+/* ---------------- Leaflet marker styling ---------------- */
+.lg-pin { position: relative; display: flex; align-items: center; justify-content: center; }
+.lg-pin__badge {
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(7,3,18,0.35); border: 2px solid rgba(255,255,255,0.92);
+  transition: transform var(--dur-fast) var(--ease-emphasis);
+}
+.lg-pin:hover .lg-pin__badge { transform: scale(1.12); }
+.lg-pin__ico { background: #fff; }
+.lg-pin.is-selected .lg-pin__badge {
+  box-shadow: 0 0 0 4px var(--lg-accent), 0 6px 18px rgba(7,3,18,0.45);
+  transform: scale(1.15);
+}
+.lg-pin__ring { position: absolute; border-radius: 50%; border: 2px solid var(--lg-accent); animation: lg-ping 1.6s ease-out infinite; pointer-events: none; }
+@keyframes lg-ping { 0% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
+
+/* city bubbles */
+.lg-bub { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.lg-bub__glow { position: absolute; border-radius: 50%; opacity: 0.34; border: 1.5px solid currentColor;
+  transition: transform var(--dur-fast) var(--ease-emphasis), opacity var(--dur-fast); }
+.lg-bub__core { position: relative; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.92);
+  box-shadow: 0 1px 4px rgba(7,3,18,0.4); transition: transform var(--dur-fast) var(--ease-emphasis); }
+.lg-bub:hover .lg-bub__glow { transform: scale(1.18); opacity: 0.5; }
+.lg-bub:hover .lg-bub__core { transform: scale(1.15); }
+.lg-bub.is-selected .lg-bub__core { box-shadow: 0 0 0 3px var(--lg-accent), 0 2px 8px rgba(7,3,18,0.5); }
+.lg-bub.is-selected .lg-bub__glow { opacity: 0.5; }
+
+/* flow arcs — faint base + bright comet overlay */
+.lg-flow-base { stroke-linecap: round; }
+.lg-flow { stroke-dasharray: 10 26; stroke-linecap: round;
+  animation: lg-flow-dash 1.1s linear infinite; }
+@keyframes lg-flow-dash { to { stroke-dashoffset: -36; } }
+@media (prefers-reduced-motion: reduce) {
+  .lg-flow { animation: none; stroke-dasharray: none; opacity: 0.4 !important; }
+  .lg-flow-base { display: none; }
+}
+
+/* origin hubs */
+.lg-hub { position: relative; display: flex; align-items: center; justify-content: center; }
+.lg-hub__core { width: 14px; height: 14px; border-radius: 50%; background: var(--lg-accent);
+  border: 2px solid #fff; box-shadow: 0 0 12px var(--lg-accent), 0 2px 6px rgba(7,3,18,0.5); z-index: 2; }
+.lg-hub__pulse { position: absolute; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--lg-accent); animation: lg-ping 1.8s ease-out infinite; }
+.lg-hub__label { position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(7,3,18,0.9); letter-spacing: 0.01em; pointer-events: none; }
+
+/* cluster bubbles */
+.lg-cluster {
+  background: var(--lg-accent); color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans); font-weight: 700; font-size: 13px;
+  box-shadow: 0 3px 12px rgba(7,3,18,0.4); border: 3px solid rgba(255,255,255,0.55);
+}
+[data-theme="dark"] .lg-cluster { border-color: rgba(255,255,255,0.18); }
+
+/* Leaflet tooltip */
+.leaflet-tooltip.lg-tip {
+  background: var(--lune-ink); color: #fff; border: none; box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-sm); padding: 7px 11px; font-family: var(--font-sans);
+  font-size: 12px; font-weight: 600;
+}
+.leaflet-tooltip.lg-tip::before { display: none; }
+.lg-tip__name { font-weight: 700; }
+.lg-tip__sub { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 600; margin-top: 1px; }
+
+.leaflet-container { font-family: var(--font-sans); background: var(--bg-sunken); }
+.leaflet-control-attribution { font-size: 10px; background: rgba(255,255,255,0.6); }
+[data-theme="dark"] .leaflet-control-attribution { background: rgba(7,3,18,0.5); color: rgba(255,255,255,0.5); }
+[data-theme="dark"] .leaflet-control-attribution a { color: rgba(255,255,255,0.7); }
+
+/* scrollbars */
+.lg-catlist::-webkit-scrollbar, .lg-detail__scroll::-webkit-scrollbar { width: 8px; }
+.lg-catlist::-webkit-scrollbar-thumb, .lg-detail__scroll::-webkit-scrollbar-thumb {
+  background: var(--border-default); border-radius: 4px; }
+
+/* density */
+.lg-app.density-compact .lg-catrow { height: 31px; }
+.lg-app.density-compact .lg-txn { padding: 7px 8px; }
+.lg-app.density-compact .lg-kpi { padding: 11px; }
+
+
+/* ===== geomap shell ===== */
+
+  html, body { margin: 0; height: 100%; background: var(--lune-ink); overflow: hidden; }
+  #root { height: 100%; }
+  .leaflet-shadow-pane { z-index: 450; }
+</style>
+<script>
+if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('lg-embedded');
+</script>
+<style>
+.lg-embedded .lg-rail { display: none; }
+button[title="Toggle theme"] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React + Babel (pinned) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Leaflet + plugins -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+<!-- Inlined assets (category icons + logo) keyed by resource id -->
+<script>
+window.__resources = {
+  "cat_travel": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTkuOTc0IiBoZWlnaHQ9Ijg4LjAwMSIgdmlld0JveD0iMCAwIDExOS45NzQgODguMDAxIiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNIDgzLjk5MSA4NC4wMDEgQyA4My45OTEgODUuMDYyIDgzLjU3IDg2LjA3OSA4Mi44MiA4Ni44MjkgQyA4Mi4wNjkgODcuNTggODEuMDUyIDg4LjAwMSA3OS45OTEgODguMDAxIEwgNy45OTEgODguMDAxIEMgNi45MyA4OC4wMDEgNS45MTMgODcuNTggNS4xNjMgODYuODI5IEMgNC40MTMgODYuMDc5IDMuOTkxIDg1LjA2MiAzLjk5MSA4NC4wMDEgQyAzLjk5MSA4Mi45NCA0LjQxMyA4MS45MjMgNS4xNjMgODEuMTczIEMgNS45MTMgODAuNDIyIDYuOTMgODAuMDAxIDcuOTkxIDgwLjAwMSBMIDc5Ljk5MSA4MC4wMDEgQyA4MS4wNTIgODAuMDAxIDgyLjA2OSA4MC40MjIgODIuODIgODEuMTczIEMgODMuNTcgODEuOTIzIDgzLjk5MSA4Mi45NCA4My45OTEgODQuMDAxIFogTSAxMTkuMTQ2IDE5LjM4MSBMIDEwOS44MjYgNy40MzYgTCAxMDkuNzY2IDcuMzYxIEMgMTA2Ljc1MiAzLjY0OSAxMDIuNTAzIDEuMTQ1IDk3Ljc5NSAwLjMwOCBDIDkzLjA4NyAtMC41MyA4OC4yMzUgMC4zNTUgODQuMTI2IDIuODAxIEwgNTguMzQxIDE4LjE5MSBMIDMxLjM3MSA4LjI3MSBDIDMwLjQ3IDcuOTM1IDI5LjQ3NyA3LjkzNSAyOC41NzYgOC4yNzEgTCAyNC45OTEgOS42MzYgTCAyNC44MzEgOS43MDEgQyAyMy42MDUgMTAuMjI3IDIyLjUyOSAxMS4wNTIgMjEuNzAzIDEyLjEwMSBDIDIwLjg3NyAxMy4xNDkgMjAuMzI3IDE0LjM4NyAyMC4xMDEgMTUuNzAzIEMgMTkuODc2IDE3LjAxOCAxOS45ODQgMTguMzY5IDIwLjQxNCAxOS42MzMgQyAyMC44NDUgMjAuODk2IDIxLjU4NSAyMi4wMzIgMjIuNTY2IDIyLjkzNiBMIDMzLjQ5MSAzMy41MzEgTCAyMy40MDYgMzkuNjMxIEwgOS4yNzYgMzQuODYxIEMgOC4yNzYgMzQuNTI0IDcuMTgzIDM0LjU5NiA2LjIzNiAzNS4wNjEgTCA0LjczNiAzNS43OTYgQyAzLjUzNiAzNi4zMzIgMi40ODcgMzcuMTU2IDEuNjgxIDM4LjE5NCBDIDAuODc1IDM5LjIzMyAwLjMzNyA0MC40NTQgMC4xMTUgNDEuNzQ5IEMgLTAuMTA3IDQzLjA0NSAtMC4wMDYgNDQuMzc1IDAuNDA4IDQ1LjYyMiBDIDAuODIzIDQ2Ljg3IDEuNTM4IDQ3Ljk5NiAyLjQ5MSA0OC45MDEgTCAyMC40OTEgNjYuNTM2IEwgMjAuNTUxIDY2LjU5NiBDIDI0LjIzOCA3MC4wODEgMjkuMTE4IDcyLjAyNSAzNC4xOTEgNzIuMDMxIEMgMzcuNzUzIDcyLjAyNSA0MS4yNDkgNzEuMDczIDQ0LjMyMSA2OS4yNzEgTCAxMTguMDI2IDI1LjI3MSBDIDExOC41MTIgMjQuOTggMTE4LjkzMiAyNC41OSAxMTkuMjU2IDI0LjEyNSBDIDExOS41OCAyMy42NiAxMTkuODAxIDIzLjEzMiAxMTkuOTA2IDIyLjU3NSBDIDEyMC4wMSAyMi4wMTggMTE5Ljk5NSAyMS40NDUgMTE5Ljg2MiAyMC44OTUgQyAxMTkuNzI4IDIwLjM0NCAxMTkuNDc5IDE5LjgyOCAxMTkuMTMxIDE5LjM4MSBMIDExOS4xNDYgMTkuMzgxIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIj48L3BhdGg+Cjwvc3ZnPg==",
+  "cat_dining": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MiIgaGVpZ2h0PSIxMDAuMDY1IiB2aWV3Qm94PSIwIDAgOTIgMTAwLjA2NSIgZmlsbD0ibm9uZSI+CiAgPHBhdGggZD0iTSA5MiA0LjA2NSBMIDkyIDk2LjA2NSBDIDkyIDk3LjEyNiA5MS41NzkgOTguMTQzIDkwLjgyOCA5OC44OTMgQyA5MC4wNzggOTkuNjQzIDg5LjA2MSAxMDAuMDY1IDg4IDEwMC4wNjUgQyA4Ni45MzkgMTAwLjA2NSA4NS45MjIgOTkuNjQzIDg1LjE3MiA5OC44OTMgQyA4NC40MjEgOTguMTQzIDg0IDk3LjEyNiA4NCA5Ni4wNjUgTCA4NCA3Mi4wNjUgTCA2MCA3Mi4wNjUgQyA1OC45MzkgNzIuMDY1IDU3LjkyMiA3MS42NDMgNTcuMTcyIDcwLjg5MyBDIDU2LjQyMSA3MC4xNDMgNTYgNjkuMTI2IDU2IDY4LjA2NSBDIDU2LjE4NiA1OC40ODMgNTcuMzk2IDQ4Ljk0OSA1OS42MSAzOS42MjUgQyA2NC41IDE5LjM4IDczLjc3IDUuODEgODYuNDI1IDAuMzkgQyA4Ny4wMzMgMC4xMjkgODcuNjk3IDAuMDI0IDg4LjM1NiAwLjA4MyBDIDg5LjAxNSAwLjE0MSA4OS42NDkgMC4zNjMgOTAuMjAxIDAuNzI3IEMgOTAuNzU0IDEuMDkxIDkxLjIwNyAxLjU4NyA5MS41MjEgMi4xNjkgQyA5MS44MzUgMi43NTIgOTIgMy40MDMgOTIgNC4wNjUgWiBNIDQzLjk0NSAzLjQxIEMgNDMuODY3IDIuODg1IDQzLjY4NSAyLjM4IDQzLjQwOSAxLjkyNiBDIDQzLjEzNCAxLjQ3MiA0Mi43NzEgMS4wNzcgNDIuMzQxIDAuNzY1IEMgNDEuOTEyIDAuNDUzIDQxLjQyNSAwLjIyOSA0MC45MDggMC4xMDcgQyA0MC4zOTEgLTAuMDE1IDM5Ljg1NSAtMC4wMzMgMzkuMzMxIDAuMDU0IEMgMzguODA3IDAuMTQyIDM4LjMwNiAwLjMzMiAzNy44NTcgMC42MTUgQyAzNy40MDggMC44OTkgMzcuMDE5IDEuMjY4IDM2LjcxNCAxLjcwMyBDIDM2LjQwOSAyLjEzOCAzNi4xOTQgMi42MjkgMzYuMDgxIDMuMTQ4IEMgMzUuOTY3IDMuNjY2IDM1Ljk1OSA0LjIwMyAzNi4wNTUgNC43MjUgTCAzOS45NDUgMjguMDY1IEwgMjggMjguMDY1IEwgMjggNC4wNjUgQyAyOCAzLjAwNCAyNy41NzkgMS45ODcgMjYuODI4IDEuMjM2IEMgMjYuMDc4IDAuNDg2IDI1LjA2MSAwLjA2NSAyNCAwLjA2NSBDIDIyLjkzOSAwLjA2NSAyMS45MjIgMC40ODYgMjEuMTcyIDEuMjM2IEMgMjAuNDIxIDEuOTg3IDIwIDMuMDA0IDIwIDQuMDY1IEwgMjAgMjguMDY1IEwgOC4wNTUgMjguMDY1IEwgMTEuOTQ1IDQuNzI1IEMgMTIuMDQxIDQuMjAzIDEyLjAzMyAzLjY2NiAxMS45MTkgMy4xNDggQyAxMS44MDYgMi42MjkgMTEuNTkxIDIuMTM4IDExLjI4NiAxLjcwMyBDIDEwLjk4MSAxLjI2OCAxMC41OTIgMC44OTkgMTAuMTQzIDAuNjE1IEMgOS42OTQgMC4zMzIgOS4xOTMgMC4xNDIgOC42NjkgMC4wNTQgQyA4LjE0NSAtMC4wMzMgNy42MDkgLTAuMDE1IDcuMDkyIDAuMTA3IEMgNi41NzUgMC4yMjkgNi4wODggMC40NTMgNS42NTkgMC43NjUgQyA1LjIyOSAxLjA3NyA0Ljg2NiAxLjQ3MiA0LjU5MSAxLjkyNiBDIDQuMzE1IDIuMzggNC4xMzMgMi44ODUgNC4wNTUgMy40MSBMIDAuMDU1IDI3LjQxIEMgMC4wMTkgMjcuNjI2IDAuMDAxIDI3Ljg0NSAwIDI4LjA2NSBDIDAuMDA4IDMzLjczNCAyLjAyIDM5LjIxOCA1LjY3OSA0My41NDcgQyA5LjMzOSA0Ny44NzcgMTQuNDExIDUwLjc3MyAyMCA1MS43MjUgTCAyMCA5Ni4wNjUgQyAyMCA5Ny4xMjYgMjAuNDIxIDk4LjE0MyAyMS4xNzIgOTguODkzIEMgMjEuOTIyIDk5LjY0MyAyMi45MzkgMTAwLjA2NSAyNCAxMDAuMDY1IEMgMjUuMDYxIDEwMC4wNjUgMjYuMDc4IDk5LjY0MyAyNi44MjggOTguODkzIEMgMjcuNTc5IDk4LjE0MyAyOCA5Ny4xMjYgMjggOTYuMDY1IEwgMjggNTEuNzI1IEMgMzMuNTg5IDUwLjc3MyAzOC42NjEgNDcuODc3IDQyLjMyMSA0My41NDcgQyA0NS45OCAzOS4yMTggNDcuOTkyIDMzLjczNCA0OCAyOC4wNjUgQyA0Ny45OTkgMjcuODQ1IDQ3Ljk4MSAyNy42MjYgNDcuOTQ1IDI3LjQxIEwgNDMuOTQ1IDMuNDEgWiIgZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iPjwvcGF0aD4KPC9zdmc+",
+  "cat_shopping": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTYuMDAxIiBoZWlnaHQ9IjEwNCIgdmlld0JveD0iMCAwIDExNi4wMDEgMTA0IiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNIDExNS44NTUgMjUuMDcgTCAxMDMuMDM1IDcxLjIxIEMgMTAyLjMzIDczLjczIDEwMC44MjMgNzUuOTUyIDk4Ljc0MSA3Ny41MzkgQyA5Ni42NTkgNzkuMTI1IDk0LjExNyA3OS45ODkgOTEuNSA4MCBMIDQyLjA4IDgwIEMgMzkuNDU1IDc5Ljk5OSAzNi45MDMgNzkuMTM5IDM0LjgxMiA3Ny41NTIgQyAzMi43MjEgNzUuOTY1IDMxLjIwNyA3My43MzggMzAuNSA3MS4yMSBMIDEyLjk2IDggTCA0IDggQyAyLjkzOSA4IDEuOTIyIDcuNTc5IDEuMTcyIDYuODI4IEMgMC40MjEgNi4wNzggMCA1LjA2MSAwIDQgQyAwIDIuOTM5IDAuNDIxIDEuOTIyIDEuMTcyIDEuMTcyIEMgMS45MjIgMC40MjEgMi45MzkgMCA0IDAgTCAxNiAwIEMgMTYuODc1IDAgMTcuNzI1IDAuMjg2IDE4LjQyMSAwLjgxNSBDIDE5LjExNyAxLjM0NSAxOS42MjEgMi4wODcgMTkuODU1IDIuOTMgTCAyNC41OTUgMjAgTCAxMTIgMjAgQyAxMTIuNjE3IDIwIDExMy4yMjUgMjAuMTQyIDExMy43NzcgMjAuNDE2IEMgMTE0LjMzIDIwLjY5IDExNC44MTIgMjEuMDg4IDExNS4xODUgMjEuNTc5IEMgMTE1LjU1OCAyMi4wNyAxMTUuODEzIDIyLjY0IDExNS45MjkgMjMuMjQ2IEMgMTE2LjA0NSAyMy44NTIgMTE2LjAyIDI0LjQ3NiAxMTUuODU1IDI1LjA3IFogTSA0MCA4OCBDIDM4LjQxOCA4OCAzNi44NzEgODguNDY5IDM1LjU1NSA4OS4zNDggQyAzNC4yNCA5MC4yMjcgMzMuMjE0IDkxLjQ3NyAzMi42MDkgOTIuOTM5IEMgMzIuMDAzIDk0LjQgMzEuODQ1IDk2LjAwOSAzMi4xNTQgOTcuNTYxIEMgMzIuNDYyIDk5LjExMyAzMy4yMjQgMTAwLjUzOCAzNC4zNDMgMTAxLjY1NyBDIDM1LjQ2MiAxMDIuNzc2IDM2Ljg4NyAxMDMuNTM4IDM4LjQzOSAxMDMuODQ2IEMgMzkuOTkxIDEwNC4xNTUgNDEuNiAxMDMuOTk3IDQzLjA2MSAxMDMuMzkxIEMgNDQuNTIzIDEwMi43ODYgNDUuNzczIDEwMS43NiA0Ni42NTIgMTAwLjQ0NSBDIDQ3LjUzMSA5OS4xMjkgNDggOTcuNTgyIDQ4IDk2IEMgNDggOTMuODc4IDQ3LjE1NyA5MS44NDMgNDUuNjU3IDkwLjM0MyBDIDQ0LjE1NyA4OC44NDMgNDIuMTIyIDg4IDQwIDg4IFogTSA5MiA4OCBDIDkwLjQxOCA4OCA4OC44NzEgODguNDY5IDg3LjU1NSA4OS4zNDggQyA4Ni4yNCA5MC4yMjcgODUuMjE0IDkxLjQ3NyA4NC42MDkgOTIuOTM5IEMgODQuMDAzIDk0LjQgODMuODQ1IDk2LjAwOSA4NC4xNTQgOTcuNTYxIEMgODQuNDYyIDk5LjExMyA4NS4yMjQgMTAwLjUzOCA4Ni4zNDMgMTAxLjY1NyBDIDg3LjQ2MiAxMDIuNzc2IDg4Ljg4NyAxMDMuNTM4IDkwLjQzOSAxMDMuODQ2IEMgOTEuOTkxIDEwNC4xNTUgOTMuNiAxMDMuOTk3IDk1LjA2MSAxMDMuMzkxIEMgOTYuNTIzIDEwMi43ODYgOTcuNzczIDEwMS43NiA5OC42NTIgMTAwLjQ0NSBDIDk5LjUzMSA5OS4xMjkgMTAwIDk3LjU4MiAxMDAgOTYgQyAxMDAgOTMuODc4IDk5LjE1NyA5MS44NDMgOTcuNjU3IDkwLjM0MyBDIDk2LjE1NyA4OC44NDMgOTQuMTIyIDg4IDkyIDg4IFoiIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIj48L3BhdGg+Cjwvc3ZnPg==",
+  "cat_entertainment": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAuMDA2IiBoZWlnaHQ9Ijk1Ljk5NSIgdmlld0JveD0iMCAwIDEwMC4wMDYgOTUuOTk1IiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNIDk2LjAwNiAzOS45OTUgTCAzOS4wNTEgMzkuOTk1IEwgOTMuMDA2IDI1Ljc1IEMgOTMuNTE2IDI1LjYxNSA5My45OTUgMjUuMzgxIDk0LjQxNSAyNS4wNiBDIDk0LjgzNSAyNC43NCA5NS4xODcgMjQuMzM5IDk1LjQ1MSAyMy44ODIgQyA5NS43MTUgMjMuNDI0IDk1Ljg4NiAyMi45MTkgOTUuOTUzIDIyLjM5NSBDIDk2LjAyMSAyMS44NzEgOTUuOTg1IDIxLjMzOSA5NS44NDYgMjAuODMgTCA5MS43NjYgNS44MyBDIDkxLjIwNCAzLjgxMiA4OS44NyAyLjA5NiA4OC4wNTMgMS4wNTUgQyA4Ni4yMzUgMC4wMTMgODQuMDgxIC0wLjI3MSA4Mi4wNTYgMC4yNjUgTCA1LjkxMSAyMC4zNjUgQyA0Ljg5NyAyMC42MjggMy45NDYgMjEuMDkxIDMuMTEzIDIxLjcyNiBDIDIuMjggMjIuMzYxIDEuNTgyIDIzLjE1NiAxLjA2MSAyNC4wNjUgQyAwLjUzNiAyNC45NjIgMC4xOTcgMjUuOTU1IDAuMDY0IDI2Ljk4NiBDIC0wLjA2OSAyOC4wMTcgMC4wMDYgMjkuMDY0IDAuMjg2IDMwLjA2NSBMIDQuMDA2IDQzLjc3NSBDIDQuMDA2IDQzLjg0NSA0LjAwNiA0My45MiA0LjAwNiA0My45OTUgTCA0LjAwNiA4Ny45OTUgQyA0LjAwNiA5MC4xMTcgNC44NDggOTIuMTUxIDYuMzQ5IDkzLjY1MiBDIDcuODQ5IDk1LjE1MiA5Ljg4NCA5NS45OTUgMTIuMDA2IDk1Ljk5NSBMIDkyLjAwNiA5NS45OTUgQyA5NC4xMjcgOTUuOTk1IDk2LjE2MiA5NS4xNTIgOTcuNjYyIDkzLjY1MiBDIDk5LjE2MyA5Mi4xNTEgMTAwLjAwNiA5MC4xMTcgMTAwLjAwNiA4Ny45OTUgTCAxMDAuMDA2IDQzLjk5NSBDIDEwMC4wMDYgNDIuOTM0IDk5LjU4NCA0MS45MTYgOTguODM0IDQxLjE2NiBDIDk4LjA4NCA0MC40MTYgOTcuMDY2IDM5Ljk5NSA5Ni4wMDYgMzkuOTk1IFogTSA4NC4wODYgNy45OTUgTCA4Ny4wODYgMTkuMDMgTCA3MC4yOTEgMjMuNDk1IEwgNTYuMjI2IDE1LjM1NSBMIDg0LjA4NiA3Ljk5NSBaIE0gMjYuNzgxIDIzLjEzIEwgNDAuODQxIDMxLjI1IEwgMTEuMDQxIDM5LjExNSBMIDguMDQxIDI4LjA3NSBMIDI2Ljc4MSAyMy4xMyBaIiBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyI+PC9wYXRoPgo8L3N2Zz4=",
+  "cat_grocery": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTEuOTk5IiBoZWlnaHQ9Ijk5Ljk4OSIgdmlld0JveD0iMCAwIDExMS45OTkgOTkuOTg5IiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNIDExMSAzMy4zNTQgQyAxMTAuNjI2IDMyLjkyNyAxMTAuMTY1IDMyLjU4NCAxMDkuNjQ3IDMyLjM0OCBDIDEwOS4xMyAzMi4xMTMgMTA4LjU2OSAzMS45OTEgMTA4IDMxLjk4OSBMIDg1LjgxNSAzMS45ODkgTCA1OSAxLjM1NCBDIDU4LjYyNSAwLjkyOSA1OC4xNjMgMC41ODggNTcuNjQ2IDAuMzU0IEMgNTcuMTI5IDAuMTIxIDU2LjU2OCAwIDU2IDAgQyA1NS40MzMgMCA1NC44NzIgMC4xMjEgNTQuMzU1IDAuMzU0IEMgNTMuODM3IDAuNTg4IDUzLjM3NiAwLjkyOSA1MyAxLjM1NCBMIDI2LjE4NSAzMS45ODkgTCA0IDMxLjk4OSBDIDMuNDMgMzEuOTg5IDIuODY3IDMyLjExMSAyLjM0OCAzMi4zNDcgQyAxLjgyOCAzMi41ODIgMS4zNjYgMzIuOTI2IDAuOTkgMzMuMzU1IEMgMC42MTUgMzMuNzg0IDAuMzM1IDM0LjI4OCAwLjE3MSAzNC44MzQgQyAwLjAwNiAzNS4zOCAtMC4wNCAzNS45NTQgMC4wMzUgMzYuNTE5IEwgNy41NyA5My4wNDkgQyA3LjgzMyA5NC45NjggOC43OCA5Ni43MjcgMTAuMjM4IDk4LjAwMiBDIDExLjY5NSA5OS4yNzcgMTMuNTY0IDk5Ljk4MyAxNS41IDk5Ljk4OSBMIDk2LjUgOTkuOTg5IEMgOTguNDM3IDk5Ljk4MyAxMDAuMzA2IDk5LjI3NyAxMDEuNzYzIDk4LjAwMiBDIDEwMy4yMiA5Ni43MjcgMTA0LjE2NyA5NC45NjggMTA0LjQzIDkzLjA0OSBMIDExMS45NjUgMzYuNTE5IEMgMTEyLjA0IDM1Ljk1MyAxMTEuOTkyIDM1LjM3OCAxMTEuODI1IDM0LjgzMiBDIDExMS42NTkgMzQuMjg2IDExMS4zNzggMzMuNzgyIDExMSAzMy4zNTQgWiBNIDMyLjggODMuOTg5IEMgMzIuNjY1IDgzLjk5NyAzMi41MyA4My45OTcgMzIuMzk1IDgzLjk4OSBDIDMxLjQgODMuOTk0IDMwLjQzOSA4My42MjggMjkuNjk5IDgyLjk2MiBDIDI4Ljk2IDgyLjI5NyAyOC40OTUgODEuMzc5IDI4LjM5NSA4MC4zODkgTCAyNS41OTUgNTIuMzg5IEMgMjUuNDg5IDUxLjMzNCAyNS44MDcgNTAuMjc5IDI2LjQ3OCA0OS40NTggQyAyNy4xNSA0OC42MzYgMjguMTIgNDguMTE1IDI5LjE3NSA0OC4wMDkgQyAzMC4yMzEgNDcuOTAzIDMxLjI4NSA0OC4yMjEgMzIuMTA3IDQ4Ljg5MiBDIDMyLjkyOCA0OS41NjMgMzMuNDQ5IDUwLjUzNCAzMy41NTUgNTEuNTg5IEwgMzYuMzU1IDc5LjU4OSBDIDM2LjQ2NyA4MC42NDQgMzYuMTU2IDgxLjcgMzUuNDg5IDgyLjUyNSBDIDM0LjgyMiA4My4zNTEgMzMuODU1IDgzLjg3NyAzMi44IDgzLjk4OSBaIE0gNjAgNzkuOTg5IEMgNjAgODEuMDUgNTkuNTc5IDgyLjA2OCA1OC44MjkgODIuODE4IEMgNTguMDc5IDgzLjU2OCA1Ny4wNjEgODMuOTg5IDU2IDgzLjk4OSBDIDU0LjkzOSA4My45ODkgNTMuOTIyIDgzLjU2OCA1My4xNzIgODIuODE4IEMgNTIuNDIyIDgyLjA2OCA1MiA4MS4wNSA1MiA3OS45ODkgTCA1MiA1MS45ODkgQyA1MiA1MC45MjggNTIuNDIyIDQ5LjkxMSA1My4xNzIgNDkuMTYxIEMgNTMuOTIyIDQ4LjQxMSA1NC45MzkgNDcuOTg5IDU2IDQ3Ljk4OSBDIDU3LjA2MSA0Ny45ODkgNTguMDc5IDQ4LjQxMSA1OC44MjkgNDkuMTYxIEMgNTkuNTc5IDQ5LjkxMSA2MCA1MC45MjggNjAgNTEuOTg5IEwgNjAgNzkuOTg5IFogTSAzNi44MTUgMzEuOTg5IEwgNTYgMTAuMDY0IEwgNzUuMTg1IDMxLjk4OSBMIDM2LjgxNSAzMS45ODkgWiBNIDg2LjM4IDUyLjM4OSBMIDgzLjU4IDgwLjM4OSBDIDgzLjQ4MSA4MS4zNzUgODMuMDIgODIuMjg5IDgyLjI4NSA4Mi45NTQgQyA4MS41NTEgODMuNjE5IDgwLjU5NiA4My45ODggNzkuNjA1IDgzLjk4OSBDIDc5LjQ3IDgzLjk5NyA3OS4zMzUgODMuOTk3IDc5LjIgODMuOTg5IEMgNzguNjc4IDgzLjkzNyA3OC4xNyA4My43ODIgNzcuNzA4IDgzLjUzMyBDIDc3LjI0NSA4My4yODUgNzYuODM2IDgyLjk0NyA3Ni41MDMgODIuNTQxIEMgNzYuMTcxIDgyLjEzNCA3NS45MjIgODEuNjY2IDc1Ljc3IDgxLjE2MyBDIDc1LjYxOSA4MC42NiA3NS41NjggODAuMTMyIDc1LjYyIDc5LjYwOSBMIDc4LjQyIDUxLjYwOSBDIDc4LjUyNiA1MC41NTQgNzkuMDQ3IDQ5LjU4MyA3OS44NjkgNDguOTEyIEMgODAuNjkgNDguMjQxIDgxLjc0NSA0Ny45MjMgODIuOCA0OC4wMjkgQyA4My44NTYgNDguMTM1IDg0LjgyNiA0OC42NTYgODUuNDk3IDQ5LjQ3OCBDIDg2LjE2OSA1MC4yOTkgODYuNDg2IDUxLjM1NCA4Ni4zOCA1Mi40MDkgTCA4Ni4zOCA1Mi4zODkgWiIgZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iPjwvcGF0aD4KPC9zdmc+",
+  "cat_wellness": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTIiIGhlaWdodD0iOTUuOTc3IiB2aWV3Qm94PSIwIDAgMTEyIDk1Ljk3NyIgZmlsbD0ibm9uZSI+CiAgPHBhdGggZD0iTSAxMTIgMzEgQyAxMTIgNjYgNjAuMTA1IDk0LjMzIDU3Ljg5NSA5NS41IEMgNTcuMzEzIDk1LjgxMyA1Ni42NjEgOTUuOTc3IDU2IDk1Ljk3NyBDIDU1LjMzOSA5NS45NzcgNTQuNjg3IDk1LjgxMyA1NC4xMDUgOTUuNSBDIDUyLjQzIDk0LjYgMjIuMzMgNzguMTU1IDcuNzY1IDU1LjA1NSBDIDcuNTc3IDU0Ljc1MiA3LjQ3MyA1NC40MDUgNy40NjUgNTQuMDQ5IEMgNy40NTYgNTMuNjkzIDcuNTQyIDUzLjM0MSA3LjcxNSA1My4wMyBDIDcuODg4IDUyLjcxOCA4LjE0MSA1Mi40NTkgOC40NDggNTIuMjc4IEMgOC43NTQgNTIuMDk3IDkuMTA0IDUyLjAwMSA5LjQ2IDUyIEwgMjggNTIgQyAyOC42NTkgNTIgMjkuMzA3IDUxLjgzOCAyOS44ODggNTEuNTI4IEMgMzAuNDY5IDUxLjIxNyAzMC45NjQgNTAuNzY4IDMxLjMzIDUwLjIyIEwgMzYgNDMuMjIgTCA0OC42NyA2Mi4yMiBDIDQ5LjE1NSA2Mi45NDggNDkuODY2IDYzLjQ5NyA1MC42OTQgNjMuNzgyIEMgNTEuNTIxIDY0LjA2OCA1Mi40MTkgNjQuMDc0IDUzLjI1IDYzLjggQyA1NC4xMzEgNjMuNTAzIDU0Ljg4NCA2Mi45MTMgNTUuMzg1IDYyLjEzIEwgNjIuMTQgNTIgTCA3MiA1MiBDIDcyLjU0OCA1Mi4wMDEgNzMuMDkxIDUxLjg5IDczLjU5NSA1MS42NzIgQyA3NC4wOTggNTEuNDU1IDc0LjU1MSA1MS4xMzYgNzQuOTI2IDUwLjczNiBDIDc1LjMwMiA1MC4zMzYgNzUuNTkgNDkuODY0IDc1Ljc3NSA0OS4zNDcgQyA3NS45NiA0OC44MzEgNzYuMDM2IDQ4LjI4MiA3NiA0Ny43MzUgQyA3NS45MSA0Ni43MDcgNzUuNDM2IDQ1Ljc1MSA3NC42NzEgNDUuMDU4IEMgNzMuOTA2IDQ0LjM2NSA3Mi45MDcgNDMuOTg3IDcxLjg3NSA0NCBMIDYwIDQ0IEMgNTkuMzQxIDQ0IDU4LjY5MyA0NC4xNjIgNTguMTEyIDQ0LjQ3MiBDIDU3LjUzMSA0NC43ODMgNTcuMDM2IDQ1LjIzMiA1Ni42NyA0NS43OCBMIDUyIDUyLjc4IEwgMzkuMzMgMzMuNzggQyAzOC44NDUgMzMuMDUyIDM4LjEzNCAzMi41MDMgMzcuMzA2IDMyLjIxOCBDIDM2LjQ3OSAzMS45MzIgMzUuNTgxIDMxLjkyNiAzNC43NSAzMi4yIEMgMzMuODY5IDMyLjQ5NyAzMy4xMTYgMzMuMDg3IDMyLjYxNSAzMy44NyBMIDI1Ljg2IDQ0IEwgMy43NjUgNDQgQyAzLjMzOCA0NC4wMDEgMi45MjEgNDMuODY1IDIuNTc2IDQzLjYxMyBDIDIuMjMyIDQzLjM2IDEuOTc3IDQzLjAwMyAxLjg1IDQyLjU5NSBDIDAuNjQ0IDM4Ljg0NyAwLjAyIDM0LjkzNyAwIDMxIEMgMC4wMDkgMjIuNzgxIDMuMjc4IDE0LjkwMiA5LjA5IDkuMDkgQyAxNC45MDIgMy4yNzggMjIuNzgxIDAuMDA5IDMxIDAgQyA0MS4zMjUgMCA1MC4zNjUgNC40NCA1NiAxMS45NDUgQyA2MS42MzUgNC40NCA3MC42NzUgMCA4MSAwIEMgODkuMjE5IDAuMDA5IDk3LjA5OCAzLjI3OCAxMDIuOTEgOS4wOSBDIDEwOC43MjIgMTQuOTAyIDExMS45OTEgMjIuNzgxIDExMiAzMSBaIiBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyI+PC9wYXRoPgo8L3N2Zz4=",
+  "cat_transportation": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iOTIiIHZpZXdCb3g9IjAgMCAxMjAgOTIiIGZpbGw9Im5vbmUiPgogIDxwYXRoIGQ9Ik0gMTE2IDM2IEwgMTEwLjYgMzYgTCA5Ni43MSA0Ljc1IEMgOTYuMDgxIDMuMzM2IDk1LjA1NiAyLjEzNSA5My43NTkgMS4yOTIgQyA5Mi40NjEgMC40NDkgOTAuOTQ3IDAgODkuNCAwIEwgMzAuNiAwIEMgMjkuMDUzIDAgMjcuNTM5IDAuNDQ5IDI2LjI0MSAxLjI5MiBDIDI0Ljk0NCAyLjEzNSAyMy45MTkgMy4zMzYgMjMuMjkgNC43NSBMIDkuNCAzNiBMIDQgMzYgQyAyLjkzOSAzNiAxLjkyMiAzNi40MjEgMS4xNzIgMzcuMTcyIEMgMC40MjEgMzcuOTIyIDAgMzguOTM5IDAgNDAgQyAwIDQxLjA2MSAwLjQyMSA0Mi4wNzggMS4xNzIgNDIuODI4IEMgMS45MjIgNDMuNTc5IDIuOTM5IDQ0IDQgNDQgTCA4IDQ0IEwgOCA4NCBDIDggODYuMTIyIDguODQzIDg4LjE1NyAxMC4zNDMgODkuNjU3IEMgMTEuODQzIDkxLjE1NyAxMy44NzggOTIgMTYgOTIgTCAyOCA5MiBDIDMwLjEyMiA5MiAzMi4xNTcgOTEuMTU3IDMzLjY1NyA4OS42NTcgQyAzNS4xNTcgODguMTU3IDM2IDg2LjEyMiAzNiA4NCBMIDM2IDgwIEwgODQgODAgTCA4NCA4NCBDIDg0IDg2LjEyMiA4NC44NDMgODguMTU3IDg2LjM0MyA4OS42NTcgQyA4Ny44NDMgOTEuMTU3IDg5Ljg3OCA5MiA5MiA5MiBMIDEwNCA5MiBDIDEwNi4xMjIgOTIgMTA4LjE1NyA5MS4xNTcgMTA5LjY1NyA4OS42NTcgQyAxMTEuMTU3IDg4LjE1NyAxMTIgODYuMTIyIDExMiA4NCBMIDExMiA0NCBMIDExNiA0NCBDIDExNy4wNjEgNDQgMTE4LjA3OCA0My41NzkgMTE4LjgyOCA0Mi44MjggQyAxMTkuNTc5IDQyLjA3OCAxMjAgNDEuMDYxIDEyMCA0MCBDIDEyMCAzOC45MzkgMTE5LjU3OSAzNy45MjIgMTE4LjgyOCAzNy4xNzIgQyAxMTguMDc4IDM2LjQyMSAxMTcuMDYxIDM2IDExNiAzNiBaIE0gMzYgNjAgTCAyNCA2MCBDIDIyLjkzOSA2MCAyMS45MjIgNTkuNTc5IDIxLjE3MiA1OC44MjggQyAyMC40MjEgNTguMDc4IDIwIDU3LjA2MSAyMCA1NiBDIDIwIDU0LjkzOSAyMC40MjEgNTMuOTIyIDIxLjE3MiA1My4xNzIgQyAyMS45MjIgNTIuNDIxIDIyLjkzOSA1MiAyNCA1MiBMIDM2IDUyIEMgMzcuMDYxIDUyIDM4LjA3OCA1Mi40MjEgMzguODI4IDUzLjE3MiBDIDM5LjU3OSA1My45MjIgNDAgNTQuOTM5IDQwIDU2IEMgNDAgNTcuMDYxIDM5LjU3OSA1OC4wNzggMzguODI4IDU4LjgyOCBDIDM4LjA3OCA1OS41NzkgMzcuMDYxIDYwIDM2IDYwIFogTSA5NiA2MCBMIDg0IDYwIEMgODIuOTM5IDYwIDgxLjkyMiA1OS41NzkgODEuMTcyIDU4LjgyOCBDIDgwLjQyMSA1OC4wNzggODAgNTcuMDYxIDgwIDU2IEMgODAgNTQuOTM5IDgwLjQyMSA1My45MjIgODEuMTcyIDUzLjE3MiBDIDgxLjkyMiA1Mi40MjEgODIuOTM5IDUyIDg0IDUyIEwgOTYgNTIgQyA5Ny4wNjEgNTIgOTguMDc4IDUyLjQyMSA5OC44MjggNTMuMTcyIEMgOTkuNTc5IDUzLjkyMiAxMDAgNTQuOTM5IDEwMCA1NiBDIDEwMCA1Ny4wNjEgOTkuNTc5IDU4LjA3OCA5OC44MjggNTguODI4IEMgOTguMDc4IDU5LjU3OSA5Ny4wNjEgNjAgOTYgNjAgWiBNIDE4LjE1NSAzNiBMIDMwLjYgOCBMIDg5LjQgOCBMIDEwMS44NDUgMzYgTCAxOC4xNTUgMzYgWiIgZmlsbD0iY3VycmVudENvbG9yIiBmaWxsLXJ1bGU9Im5vbnplcm8iPjwvcGF0aD4KPC9zdmc+",
+  "cat_financial-services": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iOTYuMDAzIiB2aWV3Qm94PSIwIDAgMTIwIDk2LjAwMyIgZmlsbD0ibm9uZSI+CiAgPHBhdGggZD0iTSAxMjAgOTIuMDAzIEMgMTIwIDkzLjA2MyAxMTkuNTc5IDk0LjA4MSAxMTguODI4IDk0LjgzMSBDIDExOC4wNzggOTUuNTgxIDExNy4wNjEgOTYuMDAzIDExNiA5Ni4wMDMgTCA0IDk2LjAwMyBDIDIuOTM5IDk2LjAwMyAxLjkyMiA5NS41ODEgMS4xNzIgOTQuODMxIEMgMC40MjEgOTQuMDgxIDAgOTMuMDYzIDAgOTIuMDAzIEMgMCA5MC45NDIgMC40MjEgODkuOTI0IDEuMTcyIDg5LjE3NCBDIDEuOTIyIDg4LjQyNCAyLjkzOSA4OC4wMDMgNCA4OC4wMDMgTCAxMTYgODguMDAzIEMgMTE3LjA2MSA4OC4wMDMgMTE4LjA3OCA4OC40MjQgMTE4LjgyOCA4OS4xNzQgQyAxMTkuNTc5IDg5LjkyNCAxMjAgOTAuOTQyIDEyMCA5Mi4wMDMgWiBNIDQuMTUgMzcuMDkzIEMgMy45MTIgMzYuMjU0IDMuOTU1IDM1LjM2IDQuMjcyIDM0LjU0OCBDIDQuNTg4IDMzLjczNSA1LjE2MiAzMy4wNDkgNS45MDUgMzIuNTkzIEwgNTcuOTA1IDAuNTkzIEMgNTguNTM1IDAuMjA1IDU5LjI2IDAgNjAgMCBDIDYwLjc0IDAgNjEuNDY1IDAuMjA1IDYyLjA5NSAwLjU5MyBMIDExNC4wOTUgMzIuNTkzIEMgMTE0LjgzOCAzMy4wNDggMTE1LjQxMiAzMy43MzQgMTE1LjczIDM0LjU0NiBDIDExNi4wNDcgMzUuMzU4IDExNi4wOSAzNi4yNTIgMTE1Ljg1MyAzNy4wOTEgQyAxMTUuNjE2IDM3LjkzIDExNS4xMTEgMzguNjY4IDExNC40MTYgMzkuMTk0IEMgMTEzLjcyIDM5LjcxOSAxMTIuODcyIDQwLjAwMyAxMTIgNDAuMDAzIEwgMTAwIDQwLjAwMyBMIDEwMCA3Mi4wMDMgTCAxMDggNzIuMDAzIEMgMTA5LjA2MSA3Mi4wMDMgMTEwLjA3OCA3Mi40MjQgMTEwLjgyOCA3My4xNzQgQyAxMTEuNTc5IDczLjkyNCAxMTIgNzQuOTQyIDExMiA3Ni4wMDMgQyAxMTIgNzcuMDYzIDExMS41NzkgNzguMDgxIDExMC44MjggNzguODMxIEMgMTEwLjA3OCA3OS41ODEgMTA5LjA2MSA4MC4wMDMgMTA4IDgwLjAwMyBMIDEyIDgwLjAwMyBDIDEwLjkzOSA4MC4wMDMgOS45MjIgNzkuNTgxIDkuMTcyIDc4LjgzMSBDIDguNDIxIDc4LjA4MSA4IDc3LjA2MyA4IDc2LjAwMyBDIDggNzQuOTQyIDguNDIxIDczLjkyNCA5LjE3MiA3My4xNzQgQyA5LjkyMiA3Mi40MjQgMTAuOTM5IDcyLjAwMyAxMiA3Mi4wMDMgTCAyMCA3Mi4wMDMgTCAyMCA0MC4wMDMgTCA4IDQwLjAwMyBDIDcuMTI5IDQwLjAwMyA2LjI4MiAzOS43MTkgNS41ODcgMzkuMTk0IEMgNC44OTIgMzguNjY4IDQuMzg3IDM3LjkzMSA0LjE1IDM3LjA5MyBaIE0gNjggNjguMDAzIEMgNjggNjkuMDYzIDY4LjQyMSA3MC4wODEgNjkuMTcyIDcwLjgzMSBDIDY5LjkyMiA3MS41ODEgNzAuOTM5IDcyLjAwMyA3MiA3Mi4wMDMgQyA3My4wNjEgNzIuMDAzIDc0LjA3OCA3MS41ODEgNzQuODI4IDcwLjgzMSBDIDc1LjU3OSA3MC4wODEgNzYgNjkuMDYzIDc2IDY4LjAwMyBMIDc2IDQ0LjAwMyBDIDc2IDQyLjk0MiA3NS41NzkgNDEuOTI0IDc0LjgyOCA0MS4xNzQgQyA3NC4wNzggNDAuNDI0IDczLjA2MSA0MC4wMDMgNzIgNDAuMDAzIEMgNzAuOTM5IDQwLjAwMyA2OS45MjIgNDAuNDI0IDY5LjE3MiA0MS4xNzQgQyA2OC40MjEgNDEuOTI0IDY4IDQyLjk0MiA2OCA0NC4wMDMgTCA2OCA2OC4wMDMgWiBNIDQ0IDY4LjAwMyBDIDQ0IDY5LjA2MyA0NC40MjEgNzAuMDgxIDQ1LjE3MiA3MC44MzEgQyA0NS45MjIgNzEuNTgxIDQ2LjkzOSA3Mi4wMDMgNDggNzIuMDAzIEMgNDkuMDYxIDcyLjAwMyA1MC4wNzggNzEuNTgxIDUwLjgyOCA3MC44MzEgQyA1MS41NzkgNzAuMDgxIDUyIDY5LjA2MyA1MiA2OC4wMDMgTCA1MiA0NC4wMDMgQyA1MiA0Mi45NDIgNTEuNTc5IDQxLjkyNCA1MC44MjggNDEuMTc0IEMgNTAuMDc4IDQwLjQyNCA0OS4wNjEgNDAuMDAzIDQ4IDQwLjAwMyBDIDQ2LjkzOSA0MC4wMDMgNDUuOTIyIDQwLjQyNCA0NS4xNzIgNDEuMTc0IEMgNDQuNDIxIDQxLjkyNCA0NCA0Mi45NDIgNDQgNDQuMDAzIEwgNDQgNjguMDAzIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIj48L3BhdGg+Cjwvc3ZnPg==",
+  "cat_household": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTAwLjAwMSIgdmlld0JveD0iMCAwIDEyMCAxMDAuMDAxIiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNIDExNiA5Mi4wMDEgTCAxMDggOTIuMDAxIEwgMTA4IDU2LjAwMSBMIDEwOS4xNyA1Ny4xNzEgQyAxMDkuOTIyIDU3LjkyMiAxMTAuOTQxIDU4LjM0MyAxMTIuMDA0IDU4LjM0MiBDIDExMy4wNjYgNTguMzQxIDExNC4wODQgNTcuOTE4IDExNC44MzUgNTcuMTY2IEMgMTE1LjU4NiA1Ni40MTQgMTE2LjAwNyA1NS4zOTUgMTE2LjAwNiA1NC4zMzMgQyAxMTYuMDA1IDUzLjI3IDExNS41ODIgNTIuMjUyIDExNC44MyA1MS41MDEgTCA2NS42NTUgMi4zNDEgQyA2NC4xNTUgMC44NDIgNjIuMTIxIDAgNjAgMCBDIDU3Ljg3OSAwIDU1Ljg0NSAwLjg0MiA1NC4zNDUgMi4zNDEgTCA1LjE3IDUxLjUwMSBDIDQuNDIgNTIuMjUyIDMuOTk5IDUzLjI3IDQgNTQuMzMxIEMgNCA1NS4zOTIgNC40MjIgNTYuNDA5IDUuMTcyIDU3LjE1OSBDIDUuOTIzIDU3LjkwOSA2Ljk0MSA1OC4zMyA4LjAwMiA1OC4zMjkgQyA5LjA2MyA1OC4zMjkgMTAuMDggNTcuOTA3IDEwLjgzIDU3LjE1NiBMIDEyIDU2LjAwMSBMIDEyIDkyLjAwMSBMIDQgOTIuMDAxIEMgMi45MzkgOTIuMDAxIDEuOTIyIDkyLjQyMyAxLjE3MiA5My4xNzMgQyAwLjQyMSA5My45MjMgMCA5NC45NCAwIDk2LjAwMSBDIDAgOTcuMDYyIDAuNDIxIDk4LjA4IDEuMTcyIDk4LjgzIEMgMS45MjIgOTkuNTggMi45MzkgMTAwLjAwMSA0IDEwMC4wMDEgTCAxMTYgMTAwLjAwMSBDIDExNy4wNjEgMTAwLjAwMSAxMTguMDc4IDk5LjU4IDExOC44MjggOTguODMgQyAxMTkuNTc5IDk4LjA4IDEyMCA5Ny4wNjIgMTIwIDk2LjAwMSBDIDEyMCA5NC45NCAxMTkuNTc5IDkzLjkyMyAxMTguODI4IDkzLjE3MyBDIDExOC4wNzggOTIuNDIzIDExNy4wNjEgOTIuMDAxIDExNiA5Mi4wMDEgWiBNIDcyIDkyLjAwMSBMIDQ4IDkyLjAwMSBMIDQ4IDY4LjAwMSBDIDQ4IDY3LjQ3MSA0OC4yMTEgNjYuOTYyIDQ4LjU4NiA2Ni41ODcgQyA0OC45NjEgNjYuMjEyIDQ5LjQ3IDY2LjAwMSA1MCA2Ni4wMDEgTCA3MCA2Ni4wMDEgQyA3MC41MyA2Ni4wMDEgNzEuMDM5IDY2LjIxMiA3MS40MTQgNjYuNTg3IEMgNzEuNzg5IDY2Ljk2MiA3MiA2Ny40NzEgNzIgNjguMDAxIEwgNzIgOTIuMDAxIFoiIGZpbGw9ImN1cnJlbnRDb2xvciIgZmlsbC1ydWxlPSJub256ZXJvIj48L3BhdGg+Cjwvc3ZnPg==",
+  "cat_services": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMTYuMDEzIiBoZWlnaHQ9IjEwOC4wMDMiIHZpZXdCb3g9IjAgMCAxMTYuMDEzIDEwOC4wMDMiIGZpbGw9Im5vbmUiPgogIDxwYXRoIGQ9Ik0gMTEzLjY3NCA0OCBMIDc5Ljk0NCAxNC4wNCBDIDcwLjkzNSA1LjA0OSA1OC43MjggMCA0Ni4wMDEgMCBDIDMzLjI3NCAwIDIxLjA2NyA1LjA0OSAxMi4wNTkgMTQuMDQgTCAxMi4wMTQgMTQuMDg1IEwgNS4xMjkgMjEuMiBDIDQuNDE2IDIxLjk2NiA0LjAzMSAyMi45ODIgNC4wNTggMjQuMDI4IEMgNC4wODYgMjUuMDc1IDQuNTIyIDI2LjA2OSA1LjI3NCAyNi43OTggQyA2LjAyNiAyNy41MjYgNy4wMzQgMjcuOTMxIDguMDgxIDI3LjkyNCBDIDkuMTI4IDI3LjkxOCAxMC4xMyAyNy41MDIgMTAuODc0IDI2Ljc2NSBMIDE3LjczOSAxOS42NzUgQyAyMC41MDEgMTYuOTEzIDIzLjY1MyAxNC41NzIgMjcuMDk0IDEyLjcyNSBMIDUwLjM0NCAzNiBMIDIuMzQ0IDg0IEMgMS42MDEgODQuNzQyIDEuMDExIDg1LjYyNCAwLjYwOSA4Ni41OTUgQyAwLjIwNyA4Ny41NjYgMCA4OC42MDYgMCA4OS42NTcgQyAwIDkwLjcwOCAwLjIwNyA5MS43NDggMC42MDkgOTIuNzE5IEMgMS4wMTEgOTMuNjkgMS42MDEgOTQuNTcyIDIuMzQ0IDk1LjMxNSBMIDEyLjY4OSAxMDUuNjYgQyAxMy40MzIgMTA2LjQwMyAxNC4zMTQgMTA2Ljk5MiAxNS4yODQgMTA3LjM5NCBDIDE2LjI1NSAxMDcuNzk2IDE3LjI5NiAxMDguMDAzIDE4LjM0NiAxMDguMDAzIEMgMTkuMzk3IDEwOC4wMDMgMjAuNDM3IDEwNy43OTYgMjEuNDA4IDEwNy4zOTQgQyAyMi4zNzkgMTA2Ljk5MiAyMy4yNjEgMTA2LjQwMyAyNC4wMDQgMTA1LjY2IEwgNzIuMDA0IDU3LjY2IEwgODguMDA0IDczLjY2IEMgODguNzQ3IDc0LjQwMyA4OS42MjkgNzQuOTkyIDkwLjU5OSA3NS4zOTQgQyA5MS41NyA3NS43OTYgOTIuNjExIDc2LjAwMyA5My42NjEgNzYuMDAzIEMgOTQuNzEyIDc2LjAwMyA5NS43NTIgNzUuNzk2IDk2LjcyMyA3NS4zOTQgQyA5Ny42OTQgNzQuOTkyIDk4LjU3NiA3NC40MDMgOTkuMzE5IDczLjY2IEwgMTEzLjY2NCA1OS4zMTUgQyAxMTQuNDA4IDU4LjU3MiAxMTQuOTk4IDU3LjY5MSAxMTUuNDAxIDU2LjcyMSBDIDExNS44MDQgNTUuNzUgMTE2LjAxMiA1NC43MSAxMTYuMDEzIDUzLjY1OSBDIDExNi4wMTQgNTIuNjA4IDExNS44MDcgNTEuNTY4IDExNS40MDYgNTAuNTk3IEMgMTE1LjAwNSA0OS42MjYgMTE0LjQxNiA0OC43NDMgMTEzLjY3NCA0OCBaIE0gNjkuMTc0IDQ5LjE2NSBMIDU4LjAwNCA2MC4zMzUgTCA0Ny42NTkgNTAgTCA1OC44MzQgMzguODI1IEMgNTkuMjA2IDM4LjQ1MyA1OS41MDEgMzguMDEyIDU5LjcwMiAzNy41MjYgQyA1OS45MDMgMzcuMDQxIDYwLjAwNyAzNi41MiA2MC4wMDcgMzUuOTk1IEMgNjAuMDA3IDM1LjQ2OSA1OS45MDMgMzQuOTQ4IDU5LjcwMiAzNC40NjMgQyA1OS41MDEgMzMuOTc3IDU5LjIwNiAzMy41MzYgNTguODM0IDMzLjE2NSBMIDM1LjE2NCA5LjUgQyA0Mi4wMDIgNy41NzQgNDkuMjMxIDcuNTA0IDU2LjEwNSA5LjI5NyBDIDYyLjk4IDExLjA5MSA2OS4yNTMgMTQuNjgzIDc0LjI3OSAxOS43MDUgTCA5Ni4zODkgNDEuOTYgTCA4Mi4wMDQgNTYuMzMgTCA3NC44MzQgNDkuMTYgQyA3NC40NjIgNDguNzg4IDc0LjAyMSA0OC40OTMgNzMuNTM2IDQ4LjI5MSBDIDczLjA1IDQ4LjA5IDcyLjUyOSA0Ny45ODYgNzIuMDA0IDQ3Ljk4NiBDIDcxLjQ3OCA0Ny45ODYgNzAuOTU4IDQ4LjA5IDcwLjQ3MiA0OC4yOTEgQyA2OS45ODYgNDguNDkzIDY5LjU0NSA0OC43ODggNjkuMTc0IDQ5LjE2IEwgNjkuMTc0IDQ5LjE2NSBaIE0gOTMuNjc0IDY3Ljk5NSBMIDg3LjY3NCA2MS45OTUgTCAxMDIuMDA0IDQ3LjYyNSBMIDEwOC4wMDQgNTMuNjI1IEwgOTMuNjc0IDY3Ljk5NSBaIiBmaWxsPSJjdXJyZW50Q29sb3IiIGZpbGwtcnVsZT0ibm9uemVybyI+PC9wYXRoPgo8L3N2Zz4=",
+  "luneIcon": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjI4MCIgdmlld0JveD0iMCAwIDI4MCAyODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjE0MCIgY3k9IjE0MCIgcj0iMTAwIiBmaWxsPSIjMDAyRTJBIj48L2NpcmNsZT4KPHBhdGggZD0iTTIwMy40MzUgNjIuNzczNEMyMDYuMDQgNjQuOTA5OCAyMDguNTU5IDY3LjE4OTQgMjEwLjk5MSA2OS42MTIzQzIxMi40MjMgNzEuMDQzOSAyMTMuODAyIDcyLjUwOTQgMjE1LjEyOSA3NC4wMDM5QzIzMC42MSA5MS42MTM3IDI0MCAxMTQuNzEgMjQwIDE0MEMyNDAgMTk1LjIyOCAxOTUuMjI4IDI0MCAxNDAgMjQwQzExMi45MDggMjQwIDg4LjMzMjIgMjI5LjIyNSA3MC4zMjMyIDIxMS43MjlDNzAuMDc5OCAyMTEuNDkgNjkuODM2MyAyMTEuMjUgNjkuNTk0NyAyMTEuMDA5TDY5LjU3MDMgMjEwLjk4NEM2Ny4xNDQ0IDIwOC41NTIgNjQuODY1MiAyMDYuMDMyIDYyLjczMjQgMjAzLjQyN0MxMDUuNTExIDIzOC4zNDUgMTY4LjQ5MSAyMzEuOTY1IDIwMy40MDUgMTg5LjE4M0MyMTcuOTY2IDE3MS4zMzkgMjI1LjkyIDE0OS4wMTUgMjI1LjkyNiAxMjUuOTgzQzIyNS45MzEgMTAyLjk1MiAyMTcuOTg2IDgwLjYyNDIgMjAzLjQzNSA2Mi43NzM0WiIgZmlsbD0iIzEwQTM3RiI+PC9wYXRoPgo8L3N2Zz4="
+};
+</script>
+
+<!-- Data (plain JS) -->
+<script>
+/* ============================================================
+   Lune Geo — cross-border spend dataset
+   Cardholders of Gulf bank clients (UAE + KSA) spending worldwide.
+   City-level data (no merchant coordinates). Figures synthetic, USD.
+   ============================================================ */
+(function () {
+  const CUR = "$";
+
+  // ---- Transaction categories (icons from Lune set, balanced hues) ----
+  const CATEGORIES = {
+    travel:        { label: "Travel",        color: "#6F8F72", icon: "travel" },
+    dining:        { label: "Dining",        color: "#FF7444", icon: "dining" },
+    shopping:      { label: "Shopping",      color: "#F26076", icon: "shopping" },
+    entertainment: { label: "Entertainment", color: "#A594F9", icon: "entertainment" },
+    grocery:       { label: "Grocery",       color: "#E76F2E", icon: "grocery" },
+    wellness:      { label: "Wellness",      color: "#F49BAB", icon: "wellness" },
+    transportation:{ label: "Transport",     color: "#5A9CB5", icon: "transportation" },
+    financial:     { label: "Financial",     color: "#3852B4", icon: "financial-services" },
+    household:     { label: "Household",     color: "#C4A484", icon: "household" },
+    services:      { label: "Services",      color: "#469A93", icon: "services" },
+  };
+  const CAT_ORDER = ["travel", "dining", "shopping", "entertainment", "grocery", "wellness", "transportation", "financial", "household", "services"];
+
+  // ---- Regions — balanced, brand-neutral categorical palette ----
+  const REGIONS = {
+    domestic: { label: "Domestic · Gulf",  color: "#7E8E89" },
+    uk:       { label: "United Kingdom",   color: "#3852B4" },
+    europe:   { label: "Europe",           color: "#5A9CB5" },
+    namerica: { label: "North America",    color: "#F26076" },
+    easia:    { label: "East Asia",        color: "#FF7444" },
+    sasia:    { label: "South Asia",       color: "#A594F9" },
+    africa:   { label: "Africa",           color: "#469A93" },
+  };
+  const REGION_ORDER = ["domestic", "uk", "europe", "namerica", "easia", "sasia", "africa"];
+
+  // ---- Origin hubs (the bank clients' home markets) ----
+  const ORIGINS = {
+    UAE: { label: "UAE", city: "Dubai",  lat: 25.20, lng: 55.27 },
+    KSA: { label: "KSA", city: "Riyadh", lat: 24.71, lng: 46.68 },
+  };
+
+  // Category-weight profiles per region
+  const PROFILE = {
+    domestic: { grocery: 5, dining: 4, shopping: 4, transportation: 3, financial: 3, entertainment: 2, household: 2, wellness: 1 },
+    uk:       { shopping: 5, dining: 4, travel: 4, entertainment: 3, wellness: 2, services: 1 },
+    europe:   { shopping: 5, travel: 4, dining: 4, wellness: 3, entertainment: 2 },
+    namerica: { shopping: 5, dining: 4, entertainment: 4, travel: 3, services: 2 },
+    easia:    { shopping: 5, dining: 4, travel: 4, entertainment: 3, wellness: 2 },
+    sasia:    { travel: 4, dining: 4, shopping: 3, financial: 4, wellness: 2 },
+    africa:   { travel: 5, dining: 3, shopping: 3, wellness: 3, entertainment: 2 },
+  };
+
+  const MERCHANTS_BY_CAT = {
+    travel:        ["Emirates", "Qatar Airways", "Four Seasons", "Marriott", "Booking.com", "Hilton"],
+    dining:        ["Nusr-Et", "Zuma", "Cipriani", "Nobu", "Hakkasan", "Sushi Samba"],
+    shopping:      ["Harrods", "Louis Vuitton", "Galeries Lafayette", "Chanel", "Apple Store", "Bloomingdale's"],
+    entertainment: ["Ticketmaster", "Disneyland", "Universal Studios", "AMC Theatres"],
+    grocery:       ["Carrefour", "Waitrose", "Whole Foods", "Migros"],
+    wellness:      ["Equinox", "Clinique La Prairie", "SHA Wellness", "Bulgari Spa"],
+    transportation:["Uber", "Careem", "Lyft", "Trainline"],
+    financial:     ["Western Union", "Wise", "Revolut", "MoneyGram"],
+    household:     ["IKEA", "John Lewis", "Williams Sonoma"],
+    services:      ["WeWork", "DHL", "FedEx"],
+  };
+
+  // ---- Brand catalog (derived from the per-category pools) ----
+  const BRANDS = [];
+  CAT_ORDER.forEach((cat) => {
+    (MERCHANTS_BY_CAT[cat] || []).forEach((name, i) => {
+      BRANDS.push({ name, cat, color: CATEGORIES[cat].color, pop: 6 - i * 0.7 });
+    });
+  });
+  const BRAND_BY_NAME = Object.fromEntries(BRANDS.map((b, i) => [b.name, { ...b, idx: i }]));
+
+  function rng(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const AVG_TICKET = { domestic: 62, uk: 210, europe: 240, namerica: 185, easia: 165, sasia: 90, africa: 175 };
+
+  // ---- Demographics ----
+  const NAT_POOL = ["Emirati", "Saudi", "Indian", "Pakistani", "Egyptian", "British", "Filipino", "Jordanian", "Lebanese"];
+  const NAT_BY_COUNTRY = { "India": "Indian", "Pakistan": "Pakistani", "United Kingdom": "British", "Egypt": "Egyptian" };
+
+  function demographics(seed, region, country) {
+    const r = rng(seed);
+    // age: international/luxury skews 35–54; domestic broader
+    const intl = region !== "domestic";
+    const ageW = intl
+      ? { "18–24": 0.8, "25–34": 2.6, "35–44": 3.2, "45–54": 2.4, "55+": 1.4 }
+      : { "18–24": 1.6, "25–34": 3.0, "35–44": 2.4, "45–54": 1.6, "55+": 1.0 };
+    const ageKeys = Object.keys(ageW);
+    const ageRaw = ageKeys.map((k) => ageW[k] * (0.8 + r() * 0.4));
+    const ageSum = ageRaw.reduce((a, b) => a + b, 0);
+    const age = ageKeys.map((k, i) => ({ band: k, share: ageRaw[i] / ageSum }));
+
+    // gender
+    const female = 0.44 + r() * 0.16; // 44–60%
+    const gender = { female, male: 1 - female };
+
+    // nationality — base resident mix + destination affinity
+    const base = { Emirati: 2.4, Saudi: 2.2, Indian: 3.0, Pakistani: 2.0, Egyptian: 1.5, British: 1.1, Filipino: 1.2, Jordanian: 0.8, Lebanese: 0.8 };
+    const w = {};
+    NAT_POOL.forEach((n) => { w[n] = base[n] * (0.8 + rng(seed * 3 + n.length)() * 0.5); });
+    if (region === "domestic") { w.Emirati *= 1.8; w.Saudi *= 1.8; }
+    const aff = NAT_BY_COUNTRY[country];
+    if (aff) w[aff] *= 2.6;
+    const sorted = Object.keys(w).map((n) => ({ name: n, w: w[n] })).sort((a, b) => b.w - a.w).slice(0, 4);
+    const ws = sorted.reduce((a, b) => a + b.w, 0);
+    const nationalities = sorted.map((x) => ({ name: x.name, share: x.w / ws }));
+
+    return { age, gender, nationalities };
+  }
+
+  // [city, country, region, lat, lng, popularity(1-10), uaeShare(0-1)]
+  const RAW = [
+    ["Dubai",        "UAE", "domestic", 25.20,  55.27, 10.0, 0.97],
+    ["Abu Dhabi",    "UAE", "domestic", 24.45,  54.38,  6.8, 0.95],
+    ["Riyadh",       "KSA", "domestic", 24.71,  46.68,  9.2, 0.04],
+    ["Jeddah",       "KSA", "domestic", 21.49,  39.19,  6.0, 0.05],
+    ["Sharjah",      "UAE", "domestic", 25.35,  55.39,  3.6, 0.96],
+    ["Dammam",       "KSA", "domestic", 26.43,  50.10,  3.1, 0.06],
+
+    ["London",       "United Kingdom", "uk", 51.51, -0.13, 8.6, 0.55],
+    ["Manchester",   "United Kingdom", "uk", 53.48, -2.24, 3.0, 0.52],
+
+    ["Paris",        "France",      "europe", 48.86,   2.35, 7.2, 0.54],
+    ["Istanbul",     "Türkiye",     "europe", 41.01,  28.98, 7.8, 0.46],
+    ["Geneva",       "Switzerland", "europe", 46.20,   6.14, 4.4, 0.58],
+    ["Milan",        "Italy",       "europe", 45.46,   9.19, 4.8, 0.53],
+    ["Munich",       "Germany",     "europe", 48.14,  11.58, 3.5, 0.5],
+    ["Madrid",       "Spain",       "europe", 40.42,  -3.70, 3.2, 0.49],
+
+    ["New York",     "United States", "namerica", 40.71, -74.01, 6.4, 0.56],
+    ["Los Angeles",  "United States", "namerica", 34.05, -118.24, 4.6, 0.55],
+    ["Miami",        "United States", "namerica", 25.76, -80.19, 3.8, 0.57],
+    ["Toronto",      "Canada",        "namerica", 43.65, -79.38, 3.0, 0.52],
+
+    ["Bangkok",      "Thailand",    "easia", 13.76, 100.50, 6.6, 0.5],
+    ["Singapore",    "Singapore",   "easia",  1.35, 103.82, 5.8, 0.53],
+    ["Kuala Lumpur", "Malaysia",    "easia",  3.14, 101.69, 4.2, 0.5],
+    ["Tokyo",        "Japan",       "easia", 35.68, 139.69, 4.0, 0.54],
+    ["Hong Kong",    "Hong Kong",   "easia", 22.32, 114.17, 3.6, 0.52],
+    ["Seoul",        "South Korea", "easia", 37.57, 126.98, 2.8, 0.55],
+    ["Jakarta",      "Indonesia",   "easia", -6.21, 106.85, 3.6, 0.5],
+
+    ["Mumbai",       "India",      "sasia", 19.08, 72.88, 5.4, 0.45],
+    ["New Delhi",    "India",      "sasia", 28.61, 77.21, 4.0, 0.43],
+    ["Karachi",      "Pakistan",   "sasia", 24.86, 67.01, 3.6, 0.4],
+    ["Malé",         "Maldives",   "sasia",  4.18, 73.51, 4.4, 0.6],
+    ["Colombo",      "Sri Lanka",  "sasia",  6.93, 79.86, 2.6, 0.48],
+
+    ["Cairo",        "Egypt",        "africa", 30.04, 31.24, 5.0, 0.5],
+    ["Cape Town",    "South Africa", "africa", -33.92, 18.42, 3.6, 0.52],
+    ["Johannesburg", "South Africa", "africa", -26.20, 28.04, 2.8, 0.5],
+    ["Nairobi",      "Kenya",        "africa", -1.29, 36.82, 2.2, 0.49],
+  ];
+
+  function topCats(region, seed) {
+    const r = rng(seed);
+    const prof = PROFILE[region];
+    const scored = Object.keys(prof).map((c) => ({ cat: c, w: prof[c] * (0.7 + r() * 0.6) }));
+    scored.sort((a, b) => b.w - a.w);
+    const top = scored.slice(0, 5);
+    const sum = top.reduce((s, x) => s + x.w, 0);
+    return top.map((x) => ({ cat: x.cat, share: x.w / sum, chg: Math.round((r() * 32 - 8) * 10) / 10 }));
+  }
+
+  const CITIES = RAW.map((row, idx) => {
+    const [city, country, region, lat, lng, pop, uaeShare] = row;
+    const r = rng(idx * 6151 + 17);
+    const avg = AVG_TICKET[region] * (0.85 + r() * 0.3);
+    const volume = Math.round(pop * pop * 78000 * (0.8 + r() * 0.45));
+    const txns = Math.round(volume / avg);
+    const cats = topCats(region, idx * 13 + 3);
+    const brandVol = {};
+    cats.forEach((x) => {
+      const pool = MERCHANTS_BY_CAT[x.cat] || [];
+      const catV = volume * x.share;
+      const ws = pool.map((n, i) => BRAND_BY_NAME[n].pop * (0.45 + rng(idx * 137 + BRAND_BY_NAME[n].idx * 3 + i)()));
+      const wsum = ws.reduce((a, b) => a + b, 0) || 1;
+      pool.forEach((n, i) => { brandVol[n] = Math.round(catV * ws[i] / wsum); });
+    });
+    const merchants = Object.keys(brandVol)
+      .map((n) => ({ name: n, cat: BRAND_BY_NAME[n].cat, volume: brandVol[n], share: brandVol[n] / volume, cards: Math.round(txns * (brandVol[n] / volume) * 0.2) }))
+      .sort((a, b) => b.volume - a.volume).slice(0, 4)
+      .map((m, mi) => ({ ...m, trend: Array.from({ length: 8 }, (_, w) => Math.round(m.volume / 8 * (0.6 + rng(idx * 71 + mi * 13 + w)() * 0.85))) }));
+    return {
+      id: "c" + idx,
+      city, country, region, lat, lng,
+      domestic: region === "domestic",
+      uaeShare,
+      volume,
+      volUAE: Math.round(volume * uaeShare),
+      volKSA: Math.round(volume * (1 - uaeShare)),
+      txns,
+      avgTicket: Math.round(avg * 100) / 100,
+      uniqueCards: Math.round(txns * (0.18 + r() * 0.12)),
+      change: Math.round((r() * 26 - 6) * 10) / 10,
+      cats,
+      brandVol,
+      merchants,
+      demo: demographics(idx * 17 + 9, region, country),
+      trend: Array.from({ length: 8 }, (_, w) => Math.round(volume / 8 * (0.72 + rng(idx * 90 + w)() * 0.55))),
+    };
+  });
+
+  function effVol(c, home) { return home === "UAE" ? c.volUAE : home === "KSA" ? c.volKSA : c.volume; }
+  function effTxns(c, home) {
+    const f = home === "UAE" ? c.uaeShare : home === "KSA" ? (1 - c.uaeShare) : 1;
+    return Math.round(c.txns * f);
+  }
+  // category spend for a city (0 if not among its top categories)
+  function catShare(c, cat) { const x = c.cats.find((k) => k.cat === cat); return x ? x.share : 0; }
+  function catVol(c, cat, home) { return Math.round(effVol(c, home) * catShare(c, cat)); }
+  function brandVol(c, name, home) {
+    const f = home === "UAE" ? c.uaeShare : home === "KSA" ? (1 - c.uaeShare) : 1;
+    return Math.round((c.brandVol[name] || 0) * f);
+  }
+  // headline demographic facts for a city
+  const AGE_MID = { "18–24": 21, "25–34": 30, "35–44": 40, "45–54": 50, "55+": 60 };
+  function demoSummary(c) {
+    const d = c.demo;
+    const avgAge = Math.round(d.age.reduce((s, a) => s + AGE_MID[a.band] * a.share, 0));
+    const topAge = d.age.slice().sort((a, b) => b.share - a.share)[0];
+    return { avgAge, topAge: topAge.band, female: Math.round(d.gender.female * 100), topNat: d.nationalities[0] };
+  }
+
+  window.LuneGeo = {
+    CUR, CATEGORIES, CAT_ORDER, REGIONS, REGION_ORDER, ORIGINS, CITIES, BRANDS, BRAND_BY_NAME,
+    effVol, effTxns, catShare, catVol, brandVol, demoSummary,
+  };
+})();
+
+</script>
+
+<!-- App (JSX, ordered) -->
+<script type="text/babel" data-presets="react">
+// @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
+
+/* BEGIN USAGE */
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+// Exports (to window): useTweaks, TweaksPanel, TweakSection, TweakRow, TweakSlider,
+//   TweakToggle, TweakRadio, TweakSelect, TweakText, TweakNumber, TweakColor, TweakButton.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// TweakRadio is the segmented control for 2–3 short options (auto-falls-back to
+// TweakSelect past ~16/~10 chars per label); reach for TweakSelect directly when
+// options are many or long. For color tweaks always curate 3-4 options rather than
+// a free picker; an option can also be a whole 2–5 color palette (the stored value
+// is the array). The Tweak* controls are a floor, not a ceiling — build custom
+// controls inside the panel if a tweak calls for UI they don't cover.
+/* END USAGE */
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+</script>
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   Lune Geo — UI components (cross-border spend, B2B / white-label)
+   ============================================================ */
+const { useState, useRef, useEffect, useMemo } = React;
+const CUR = LuneGeo.CUR;
+
+/* ---------------- Icon set ---------------- */
+const ICONS = {
+  search: "M11 4a7 7 0 1 0 4.2 12.6l4.1 4.1 1.4-1.4-4.1-4.1A7 7 0 0 0 11 4Zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z",
+  calendar: "M7 2v2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7ZM5 9h14v10H5V9Z",
+  region: "M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z",
+  globe: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c.9 0 2.4 2 2.8 6H9.2C9.6 6 11.1 4 12 4ZM7.2 10H4.3A8 8 0 0 1 8 4.6 14 14 0 0 0 7.2 10Zm0 4a14 14 0 0 0 .8 5.4A8 8 0 0 1 4.3 14h2.9Zm2 0h5.6C14.4 18 12.9 20 12 20s-2.4-2-2.8-6Zm7.6 0h2.9a8 8 0 0 1-3.7 5.4 14 14 0 0 0 .8-5.4Zm0-4a14 14 0 0 0-.8-5.4A8 8 0 0 1 19.7 10h-2.9Z",
+  bubbles: "M9 3a5 5 0 1 0 0 10A5 5 0 0 0 9 3Zm8 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z",
+  flow: "M3 12h11m0 0-4-4m4 4-4 4M17 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm2 8a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z",
+  heat: "M12 2s4 4 4 8a4 4 0 0 1-8 0c0-1.5.6-2.8 1.3-3.7C9 7.5 9 9 10 9c.8 0 1-.7 1-1.5C11 5.5 12 2 12 2Z M8.5 14a3.5 3.5 0 0 0 7 0c0-.6-.1-1.1-.3-1.6A4 4 0 0 1 12 14a4 4 0 0 1-3.2-1.6c-.2.5-.3 1-.3 1.6Z",
+  tag: "M2 12V4a2 2 0 0 1 2-2h8l9.5 9.5a1.5 1.5 0 0 1 0 2.1l-6.9 6.9a1.5 1.5 0 0 1-2.1 0L2 12Zm5-7a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z",
+  users: "M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-3.3 0-6 1.8-6 4v2h12v-2c0-2.2-2.7-4-6-4Zm8.5-9a3.5 3.5 0 0 1 0 7M22 19v-1.5c0-1.6-1.4-3-3.5-3.6",
+  compare: "M4 4h6v16H4V4Zm10 0h6v16h-6V4Z",
+  plus: "M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z",
+  minus: "M5 11h14v2H5z",
+  target: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm1-7h-2v2.06A7 7 0 0 0 5.06 11H3v2h2.06A7 7 0 0 0 11 18.94V21h2v-2.06A7 7 0 0 0 18.94 13H21v-2h-2.06A7 7 0 0 0 13 5.06V3Zm-1 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z",
+  x: "M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6 6.4 5Z",
+  download: "M12 3v10.6l3.3-3.3 1.4 1.4-5.7 5.7-5.7-5.7 1.4-1.4 3.3 3.3V3h2ZM5 19h14v2H5z",
+  sparkle: "M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6L12 2Zm6 10l.9 2.6L21 15l-2.1.7L18 18l-.9-2.3L15 15l2.1-.4L18 12Z",
+  sun: "M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0-5h0v3m0 14v3M4.2 4.2l2.1 2.1m11.4 11.4 2.1 2.1M2 12h3m14 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1",
+  moon: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z",
+  map: "M14.5 3 9 5 3.6 3.2A1 1 0 0 0 2 4v15l5.5-2 5 2 5.4-1.8A1 1 0 0 0 18 16.2V3l-3.5 1.5ZM9 5v12m5-12v12",
+  trend: "M3 17l6-6 4 4 8-8M21 7v5m0-5h-5",
+  card: "M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm2 2v2h14V8H5Zm0 5v5h14v-5H5Z",
+  plane: "M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16Z",
+};
+function Glyph({ name, size = 18, stroke = false, style }) {
+  const d = ICONS[name];
+  if (stroke) {
+    return (
+      <svg viewBox="0 0 24 24" width={size} height={size} fill="none"
+        stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={style}>
+        <path d={d} />
+      </svg>
+    );
+  }
+  return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" style={style}><path d={d} /></svg>;
+}
+
+/* Resolve asset path — uses bundler-inlined blob URLs when present (standalone export) */
+const ASSET = (path, id) => (window.__resources && window.__resources[id]) || path;
+
+function CatIcon({ cat, size = 16, color }) {
+  const meta = LuneGeo.CATEGORIES[cat];
+  const src = ASSET(`assets/icons/categories/${meta.icon}.svg`, "cat_" + meta.icon);
+  return (
+    <span className="lg-catico" style={{
+      width: size, height: size, display: "inline-block",
+      background: color || meta.color,
+      WebkitMask: `url("${src}") center/contain no-repeat`,
+      mask: `url("${src}") center/contain no-repeat`,
+    }} />
+  );
+}
+
+/* ---------------- Brand logo tile (monogram placeholder) ----------------
+   Swap-in ready: drop a real <img> here when the bank supplies logo art. */
+function brandInitials(name) {
+  const w = name.trim().split(/\s+/);
+  return (w.length > 1 ? w[0][0] + w[1][0] : name.slice(0, 2)).toUpperCase();
+}
+function BrandLogo({ name, color, size = 28 }) {
+  return (
+    <span className="lg-logo" style={{ width: size, height: size, background: color, fontSize: Math.round(size * 0.4) }}>
+      {brandInitials(name)}
+    </span>
+  );
+}
+
+/* ---------------- Formatting ---------------- */
+function fmtBig(n) {
+  if (n >= 1e9) return CUR + (n / 1e9).toFixed(1) + "B";
+  if (n >= 1e6) return CUR + (n / 1e6).toFixed(1) + "M";
+  if (n >= 1e3) return CUR + Math.round(n / 1e3) + "k";
+  return CUR + Math.round(n).toLocaleString("en-US");
+}
+function fmtUSD(n) { return CUR + Math.round(n).toLocaleString("en-US"); }
+function fmtNum(n) { return Math.round(n).toLocaleString("en-US"); }
+function fmtPct(n) { return Math.round(n) + "%"; }
+
+/* ---------------- Toggle switch ---------------- */
+function Switch({ checked, onChange }) {
+  return (
+    <button className={"lg-switch" + (checked ? " on" : "")} role="switch" aria-checked={checked}
+      onClick={() => onChange(!checked)}><span /></button>
+  );
+}
+
+/* ---------------- Left rail ---------------- */
+function Sidebar({ page, onNav }) {
+  const nav = [
+    { page: "map", icon: "map", label: "Geography" },
+    { page: "compare", icon: "compare", label: "Compare cities", stroke: true },
+    { page: "segments", icon: "target", label: "Segments" },
+    { page: "cardholders", icon: "card", label: "Cardholders" },
+    { page: "enrich", icon: "sparkle", label: "Enrich" },
+  ];
+  return (
+    <nav className="lg-rail">
+      <img className="lg-rail__logo" src={ASSET("assets/brand/lune-icon-light.svg", "luneIcon")} alt="Lune" />
+      {nav.map((n) => (
+        <button key={n.page} className={"lg-rail__btn" + (page === n.page ? " is-active" : "")} title={n.label} onClick={() => onNav(n.page)}>
+          <Glyph name={n.icon} size={20} stroke={n.stroke} />
+        </button>
+      ))}
+      <div className="lg-rail__spacer" />
+      <div className="lg-rail__avatar">EB</div>
+    </nav>
+  );
+}
+
+/* ---------------- Top bar ---------------- */
+function TopBar({ query, onQuery, stats, theme, onToggleTheme }) {
+  return (
+    <header className="lg-topbar">
+      <div className="lg-topbar__title">
+        <span className="lg-eyebrow">Enrich · Cross-border</span>
+        <span className="lg-title">Where cardholders spend</span>
+      </div>
+      <label className="lg-search">
+        <Glyph name="search" size={16} />
+        <input value={query} onChange={(e) => onQuery(e.target.value)} placeholder="Search city, country, region…" />
+      </label>
+      <button className="lg-chip"><Glyph name="calendar" size={15} />Last <strong>90 days</strong></button>
+      <div className="lg-topbar__spacer" />
+      <div className="lg-stats">
+        <div className="lg-stat"><span className="lg-stat__val">{fmtBig(stats.volume)}</span><span className="lg-stat__lbl">Total spend</span></div>
+        <div className="lg-stat"><span className="lg-stat__val">{fmtNum(stats.txns)}</span><span className="lg-stat__lbl">Transactions</span></div>
+        <div className="lg-stat"><span className="lg-stat__val">{stats.countries}</span><span className="lg-stat__lbl">Countries</span></div>
+        <div className="lg-stat"><span className="lg-stat__val">{fmtPct(stats.intlPct)}</span><span className="lg-stat__lbl">International</span></div>
+      </div>
+      <button className="lg-iconbtn" title="Toggle theme" onClick={onToggleTheme}>
+        <Glyph name={theme === "dark" ? "sun" : "moon"} size={18} stroke />
+      </button>
+    </header>
+  );
+}
+
+/* ---------------- Filter / control panel ---------------- */
+function FilterPanel({ side, vizMode, onViz, lens, onLens, home, onHome,
+  listItems, active, onToggle, onAll, onClear, demographics, onDemographics }) {
+  const allOn = listItems.every((it) => active.has(it.key));
+  return (
+    <aside className={"lg-card lg-filters side-" + side}>
+      <div className="lg-seg">
+        {[["bubbles", "bubbles", "Bubbles"], ["flows", "flow", "Flows"], ["heat", "heat", "Heat"]].map(([m, ic, lbl]) => (
+          <button key={m} className={vizMode === m ? "is-active" : ""} onClick={() => onViz(m)}>
+            <Glyph name={ic} size={14} stroke={ic === "flow"} />{lbl}
+          </button>
+        ))}
+      </div>
+
+      <div className="lg-sectlabel"><span>Lens</span></div>
+      <div className="lg-seg lg-seg--home lg-seg--lens">
+        {[["region", "Region"], ["category", "Category"], ["brand", "Brand"]].map(([k, lbl]) => (
+          <button key={k} className={lens === k ? "is-active" : ""} onClick={() => onLens(k)}>{lbl}</button>
+        ))}
+      </div>
+
+      <div className="lg-sectlabel"><span>Home market</span></div>
+      <div className="lg-seg lg-seg--home">
+        {[["all", "All markets"], ["UAE", "UAE"], ["KSA", "KSA"]].map(([k, lbl]) => (
+          <button key={k} className={home === k ? "is-active" : ""} onClick={() => onHome(k)}>{lbl}</button>
+        ))}
+      </div>
+
+      <div className="lg-sectlabel">
+        <span>{lens === "region" ? "Destination regions" : lens === "category" ? "Spend categories" : "Brands"}</span>
+        <button onClick={allOn ? onClear : onAll}>{allOn ? "Clear" : "All"}</button>
+      </div>
+      <div className="lg-catlist">
+        {listItems.map((it) => {
+          const on = active.has(it.key);
+          return (
+            <div key={it.key} className={"lg-catrow" + (on ? "" : " is-off")} onClick={() => onToggle(it.key)}>
+              {it.brand
+                ? <BrandLogo name={it.name} color={it.color} size={22} />
+                : <span className="lg-catdot" style={{ background: it.color }} />}
+              {it.cat && !it.brand && <CatIcon cat={it.cat} size={15} color="var(--text-secondary)" />}
+              <span className="lg-catname">{it.label}</span>
+              <span className="lg-catvol">{fmtBig(it.vol)}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="lg-demoswitch">
+        <Glyph name="users" size={16} stroke />
+        <div className="lg-demoswitch__txt">
+          <span>Demographics</span>
+          <small>Age · gender · nationality</small>
+        </div>
+        <Switch checked={demographics} onChange={onDemographics} />
+      </div>
+
+      <div className="lg-legend">
+        {vizMode === "heat" ? (
+          <div className="lg-legend__row"><span className="lg-legend__cap">Low</span><div className="lg-heatbar" /><span className="lg-legend__cap">High</span></div>
+        ) : vizMode === "flows" ? (
+          <div className="lg-legend__row"><span className="lg-flowkey" /><span className="lg-legend__cap">Flows from Gulf · width = spend</span></div>
+        ) : (
+          <div className="lg-legend__row">
+            <div className="lg-bubbles">
+              <span className="lg-bubble" style={{ width: 10, height: 10 }} />
+              <span className="lg-bubble" style={{ width: 18, height: 18 }} />
+              <span className="lg-bubble" style={{ width: 28, height: 28 }} />
+            </div>
+            <span className="lg-legend__cap">Sized by spend volume</span>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+/* ---------------- Zoom controls ---------------- */
+function ZoomControls({ side, onZoom, onReset }) {
+  return (
+    <div className={"lg-zoom side-" + side}>
+      <button title="World view" onClick={onReset}><Glyph name="globe" size={18} /></button>
+      <div className="pair">
+        <button title="Zoom in" onClick={() => onZoom(1)}><Glyph name="plus" size={18} /></button>
+        <button title="Zoom out" onClick={() => onZoom(-1)}><Glyph name="minus" size={18} /></button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Sparkline ---------------- */
+function Sparkline({ data }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="lg-spark">
+      <div className="lg-spark__bars">
+        {data.map((v, i) => (
+          <div key={i} className={"lg-spark__bar" + (i === data.length - 1 ? " last" : "")} style={{ height: (v / max * 100) + "%" }} />
+        ))}
+      </div>
+      <div className="lg-spark__axis"><span>8 wks ago</span><span>This week</span></div>
+    </div>
+  );
+}
+
+/* ---------------- Mini bar chart ---------------- */
+function MiniBars({ data, height = 24, color, gap = 2 }) {
+  const max = Math.max(...data, 1);
+  return (
+    <div className="lg-minibars" style={{ height, gap }}>
+      {data.map((v, i) => (
+        <span key={i} style={{ height: Math.max(8, v / max * 100) + "%", background: color || "var(--lg-accent)", opacity: i === data.length - 1 ? 1 : 0.55 }} />
+      ))}
+    </div>
+  );
+}
+
+/* ---------------- Demographics block (USP — rich) ---------------- */
+function Demographics({ city }) {
+  const demo = city.demo;
+  const s = LuneGeo.demoSummary(city);
+  const maxAge = Math.max(...demo.age.map((x) => x.share));
+  return (
+    <div className="lg-demo">
+      <div className="lg-demo__title"><Glyph name="users" size={15} stroke />Cardholder demographics</div>
+      <div className="lg-demo__stats">
+        <div><div className="lg-demo__big">{s.avgAge}</div><div className="lg-demo__cap">avg age</div></div>
+        <div><div className="lg-demo__big">{s.female}%</div><div className="lg-demo__cap">female</div></div>
+        <div><div className="lg-demo__big">{s.topNat.name}</div><div className="lg-demo__cap">top nationality</div></div>
+      </div>
+      <div className="lg-demo__lbl">Age distribution</div>
+      <div className="lg-demo__age">
+        {demo.age.map((a) => (
+          <div key={a.band} className="lg-agecol">
+            <div className="lg-agecol__bar"><span style={{ height: Math.round(a.share / maxAge * 100) + "%" }} /></div>
+            <div className="lg-agecol__pct">{Math.round(a.share * 100)}</div>
+            <div className="lg-agecol__band">{a.band}</div>
+          </div>
+        ))}
+      </div>
+      <div className="lg-demo__lbl">Gender</div>
+      <div className="lg-gender">
+        <div className="lg-gender__bar"><span className="f" style={{ width: s.female + "%" }} /><span className="m" style={{ width: (100 - s.female) + "%" }} /></div>
+        <div className="lg-gender__keys"><span><i className="f" />Female {s.female}%</span><span><i className="m" />Male {100 - s.female}%</span></div>
+      </div>
+      <div className="lg-demo__lbl">Top nationalities</div>
+      <div className="lg-nats">
+        {demo.nationalities.map((n) => (<span key={n.name} className="lg-nat">{n.name}<b>{Math.round(n.share * 100)}%</b></span>))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- City detail panel ---------------- */
+function CityDetail({ side, city, home, demographics, onBuild, onClose }) {
+  const c = city;
+  const region = c ? LuneGeo.REGIONS[c.region] : null;
+  const vol = c ? LuneGeo.effVol(c, home) : 0;
+  const txns = c ? LuneGeo.effTxns(c, home) : 0;
+  const up = c && c.change >= 0;
+  const uaePct = c ? Math.round(c.uaeShare * 100) : 0;
+  const originLabel = home === "all" ? "Gulf" : home;
+  return (
+    <section className={"lg-card lg-detail side-" + side + (c ? "" : " is-hidden")}>
+      {c && (
+        <>
+          <div className="lg-detail__scroll">
+            <div className="lg-detail__head">
+              <button className="lg-detail__close" onClick={onClose}><Glyph name="x" size={14} /></button>
+              <div className="lg-merch-id">
+                <div className="lg-merch-logo" style={{ background: region.color }}>
+                  <Glyph name={c.domestic ? "region" : "plane"} size={24} stroke />
+                </div>
+                <div>
+                  <div className="lg-merch-name">{c.city}</div>
+                  <div className="lg-merch-sub">
+                    <span className="lg-pill" style={{ background: "color-mix(in srgb, " + region.color + " 16%, transparent)", color: region.color }}>{region.label}</span>
+                    {c.country}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg-conf">
+              <Glyph name={c.domestic ? "region" : "globe"} size={16} />
+              <span>{c.domestic ? "Domestic spend" : "International spend"} · enriched & geocoded by Lune</span>
+            </div>
+
+            {!c.domestic && (
+              <div className="lg-corridor">
+                <span className="lg-corridor__node">{originLabel}</span>
+                <span className="lg-corridor__arrow"><Glyph name="flow" size={15} stroke /></span>
+                <span className="lg-corridor__node dest">{c.city}</span>
+                <span className="lg-corridor__val">{fmtBig(vol)}</span>
+              </div>
+            )}
+
+            <div className="lg-kpis">
+              <div className="lg-kpi"><div className="lg-kpi__lbl">Spend · 90d</div><div className="lg-kpi__val">{fmtBig(vol)}</div></div>
+              <div className="lg-kpi"><div className="lg-kpi__lbl">Transactions</div><div className="lg-kpi__val">{fmtNum(txns)}</div></div>
+              <div className="lg-kpi"><div className="lg-kpi__lbl">Avg. ticket</div><div className="lg-kpi__val">{fmtUSD(c.avgTicket)}</div></div>
+              <div className="lg-kpi"><div className="lg-kpi__lbl">Cardholders</div><div className="lg-kpi__val">{fmtNum(c.uniqueCards)}</div></div>
+            </div>
+
+            {demographics && <Demographics city={c} />}
+
+            <div className="lg-sub-h">Spend trend<span className={"lg-delta " + (up ? "up" : "down")}>{up ? "▲" : "▼"} {Math.abs(c.change)}% QoQ</span></div>
+            <Sparkline data={c.trend} />
+
+            {!c.domestic && (
+              <>
+                <div className="lg-sub-h">Originating market</div>
+                <div className="lg-origin">
+                  <div className="lg-origin__bar"><span style={{ width: uaePct + "%" }} className="uae" /><span style={{ width: (100 - uaePct) + "%" }} className="ksa" /></div>
+                  <div className="lg-origin__keys"><span><i className="uae" />UAE {uaePct}%</span><span><i className="ksa" />KSA {100 - uaePct}%</span></div>
+                </div>
+              </>
+            )}
+
+            <div className="lg-sub-h">Category spend{!c.domestic && <span>{originLabel} → {c.city}</span>}</div>
+            <div className="lg-catbars">
+              {c.cats.map((x) => {
+                const meta = LuneGeo.CATEGORIES[x.cat];
+                const catV = LuneGeo.catVol(c, x.cat, home);
+                const cu = x.chg >= 0;
+                return (
+                  <div key={x.cat} className="lg-catbar">
+                    <CatIcon cat={x.cat} size={15} />
+                    <span className="lg-catbar__name">{meta.label}</span>
+                    <div className="lg-catbar__track"><span style={{ width: (x.share * 100) + "%", background: meta.color }} /></div>
+                    <span className="lg-catbar__amt">{fmtBig(catV)}</span>
+                    <span className={"lg-catbar__chg " + (cu ? "up" : "down")}>{cu ? "▲" : "▼"}{Math.abs(x.chg)}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="lg-sub-h">Top brand spend<span>last 8 wks</span></div>
+            <div className="lg-brands">
+              {c.merchants.map((mch, i) => {
+                const col = LuneGeo.CATEGORIES[mch.cat].color;
+                return (
+                  <div key={i} className="lg-brandrow">
+                    <BrandLogo name={mch.name} color={col} size={36} />
+                    <div className="lg-brandrow__main">
+                      <div className="lg-brandrow__top">
+                        <span className="lg-brandrow__name">{mch.name}</span>
+                        <span className="lg-brandrow__amt">{fmtBig(mch.volume)}</span>
+                      </div>
+                      <div className="lg-brandrow__bottom">
+                        <span className="lg-brandrow__meta">{LuneGeo.CATEGORIES[mch.cat].label} · {Math.round(mch.share * 100)}% · {fmtNum(mch.cards)} cards</span>
+                        <MiniBars data={mch.trend} height={26} color={col} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="lg-detail__foot">
+            <button className="lg-btn lg-btn--ghost"><Glyph name="download" size={15} />Export</button>
+            <button className="lg-btn lg-btn--primary" onClick={() => onBuild(c)}><Glyph name="target" size={15} />Build segment</button>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+Object.assign(window, {
+  ICONS, Glyph, CatIcon, BrandLogo, Switch, MiniBars, fmtBig, fmtUSD, fmtNum, fmtPct,
+  Sidebar, TopBar, FilterPanel, ZoomControls, Sparkline, Demographics, CityDetail,
+});
+
+</script>
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   Lune Geo — secondary pages: Compare cities, Segments
+   Relies on globals from components.jsx + LuneGeo data.
+   ============================================================ */
+const { useState: _useState, useMemo: _useMemo, useEffect: _useEffect } = React;
+
+/* ---------------- Compare cities ---------------- */
+function CompareColumn({ id, home, onChange, onRemove, canRemove }) {
+  const c = LuneGeo.CITIES.find((x) => x.id === id);
+  const region = LuneGeo.REGIONS[c.region];
+  const vol = LuneGeo.effVol(c, home), txns = LuneGeo.effTxns(c, home);
+  const s = LuneGeo.demoSummary(c);
+  const maxAge = Math.max(...c.demo.age.map((a) => a.share));
+  const kpis = [["Spend · 90d", fmtBig(vol)], ["Transactions", fmtNum(txns)], ["Avg. ticket", fmtUSD(c.avgTicket)], ["Cardholders", fmtNum(c.uniqueCards)]];
+  return (
+    <div className="lg-col">
+      <div className="lg-col__head">
+        <select className="lg-cmp-select" value={id} onChange={(e) => onChange(e.target.value)}>
+          {LuneGeo.CITIES.map((x) => <option key={x.id} value={x.id}>{x.city} · {x.country}</option>)}
+        </select>
+        {canRemove && <button className="lg-col__rm" title="Remove" onClick={onRemove}><Glyph name="x" size={13} /></button>}
+      </div>
+      <span className="lg-pill lg-col__pill" style={{ background: `color-mix(in srgb, ${region.color} 16%, transparent)`, color: region.color }}>{region.label}</span>
+
+      <div className="lg-col__kpis">
+        {kpis.map(([l, v]) => <div key={l} className="lg-col__kpi"><span>{l}</span><b>{v}</b></div>)}
+      </div>
+
+      <div className="lg-col__lbl">Spend by category</div>
+      <div className="lg-catbars lg-catbars--cmp">
+        {c.cats.map((x) => {
+          const m = LuneGeo.CATEGORIES[x.cat];
+          return (
+            <div key={x.cat} className="lg-catbar">
+              <CatIcon cat={x.cat} size={14} />
+              <span className="lg-catbar__name">{m.label}</span>
+              <div className="lg-catbar__track"><span style={{ width: (x.share * 100) + "%", background: m.color }} /></div>
+              <span className="lg-catbar__pct">{Math.round(x.share * 100)}%</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="lg-col__lbl">Demographics</div>
+      <div className="lg-col__demo">
+        <div className="lg-col__demostat"><b>{s.avgAge}</b><span>avg age</span></div>
+        <div className="lg-col__demostat"><b>{s.female}%</b><span>female</span></div>
+        <div className="lg-col__demostat"><b>{s.topNat.name}</b><span>top nat.</span></div>
+      </div>
+      <div className="lg-demo__age">
+        {c.demo.age.map((a) => (
+          <div key={a.band} className="lg-agecol">
+            <div className="lg-agecol__bar"><span style={{ height: Math.round(a.share / maxAge * 100) + "%" }} /></div>
+            <div className="lg-agecol__pct">{Math.round(a.share * 100)}</div>
+            <div className="lg-agecol__band">{a.band}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="lg-col__lbl">Top brands</div>
+      <div className="lg-col__brands">
+        {c.merchants.slice(0, 3).map((mch, i) => (
+          <div key={i} className="lg-col__brand">
+            <BrandLogo name={mch.name} color={LuneGeo.CATEGORIES[mch.cat].color} size={26} />
+            <span className="nm">{mch.name}</span><span className="amt">{fmtBig(mch.volume)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ComparePage({ cities, onSetCities, home }) {
+  const setAt = (i, id) => { const n = cities.slice(); n[i] = id; onSetCities(n); };
+  const rm = (i) => onSetCities(cities.filter((_, j) => j !== i));
+  const add = () => { const a = LuneGeo.CITIES.find((c) => !cities.includes(c.id)); onSetCities([...cities, a ? a.id : LuneGeo.CITIES[0].id]); };
+  return (
+    <div className="lg-page">
+      <div className="lg-page__head">
+        <div><div className="lg-eyebrow">Enrich · Cross-border</div><div className="lg-page__title">Compare cities</div></div>
+        {cities.length < 4 && <button className="lg-chip" onClick={add}><Glyph name="plus" size={15} />Add city</button>}
+      </div>
+      <div className="lg-cmpscroll">
+        <div className="lg-cmpgrid" style={{ gridTemplateColumns: `repeat(${cities.length}, minmax(248px, 1fr))` }}>
+          {cities.map((id, i) => (
+            <CompareColumn key={i} id={id} home={home} onChange={(v) => setAt(i, v)} onRemove={() => rm(i)} canRemove={cities.length > 2} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Segments ---------------- */
+function buildSaved() {
+  const mk = (name, cityId, market, focus, status) => {
+    const c = LuneGeo.CITIES.find((x) => x.id === cityId);
+    return { id: name, name, city: c, market, focus, status, size: c.uniqueCards, spend: LuneGeo.effVol(c, market === "All" ? "all" : market) };
+  };
+  return [
+    mk("Luxury shoppers · London", "c6", "UAE", "Shopping spend", "Active"),
+    mk("Frequent travellers · East Asia", "c18", "All", "Travel spend", "Active"),
+    mk("Fine dining · Paris", "c8", "All", "Dining spend", "Paused"),
+    mk("Maldives holidaymakers", "c27", "UAE", "Travel spend", "Active"),
+  ];
+}
+
+function SegmentDetail({ seg }) {
+  const c = seg.city;
+  const avgPer = Math.round(seg.spend / Math.max(seg.size, 1));
+  const kpis = [["Cardholders", fmtNum(seg.size)], ["Est. spend · 90d", fmtBig(seg.spend)], ["Avg / cardholder", fmtUSD(avgPer)], ["Match confidence", "94%"]];
+  return (
+    <section className="lg-segdetail">
+      <div className="lg-segdetail__head">
+        <div>
+          <div className="lg-segdetail__status"><span className={"lg-segstatus " + seg.status.toLowerCase()}>{seg.status}</span></div>
+          <div className="lg-page__title">{seg.name}</div>
+        </div>
+        <div className="lg-seg-actions">
+          <button className="lg-btn lg-btn--ghost"><Glyph name="download" size={15} />Export</button>
+          <button className="lg-btn lg-btn--primary"><Glyph name="sparkle" size={15} />{seg.status === "Draft" ? "Create segment" : "Activate"}</button>
+        </div>
+      </div>
+
+      <div className="lg-segchips">
+        <span className="lg-chip2"><i style={{ background: LuneGeo.REGIONS[c.region].color }} />Destination · {c.city}</span>
+        <span className="lg-chip2">Home market · {seg.market}</span>
+        <span className="lg-chip2">Focus · {seg.focus}</span>
+      </div>
+
+      <div className="lg-segkpis">
+        {kpis.map(([l, v]) => <div key={l} className="lg-segkpi"><span>{l}</span><b>{v}</b></div>)}
+      </div>
+
+      <div className="lg-segfoot">Built from enriched cross-border transactions · Updated daily · Last sync 06:00 GST</div>
+
+      <div className="lg-segcols">
+        <div className="lg-segcard"><Demographics city={c} /></div>
+        <div className="lg-segcard">
+          <div className="lg-demo__title"><Glyph name="tag" size={15} />Top brands in segment</div>
+          <div className="lg-brands">
+            {c.merchants.map((mch, i) => {
+              const col = LuneGeo.CATEGORIES[mch.cat].color;
+              return (
+                <div key={i} className="lg-brandrow">
+                  <BrandLogo name={mch.name} color={col} size={36} />
+                  <div className="lg-brandrow__main">
+                    <div className="lg-brandrow__top"><span className="lg-brandrow__name">{mch.name}</span><span className="lg-brandrow__amt">{fmtBig(mch.volume)}</span></div>
+                    <div className="lg-brandrow__bottom"><span className="lg-brandrow__meta">{LuneGeo.CATEGORIES[mch.cat].label} · {Math.round(mch.share * 100)}%</span><MiniBars data={mch.trend} height={26} color={col} /></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SegmentBuilder({ onClose, onCreate }) {
+  const cities = _useMemo(() => [...LuneGeo.CITIES].filter((c) => !c.domestic).sort((a, b) => a.city.localeCompare(b.city)), []);
+  const cats = _useMemo(() => Object.entries(LuneGeo.CATEGORIES).map(([k, v]) => [k, v.label]), []);
+  const [cityId, setCityId] = _useState(cities[0].id);
+  const [market, setMarket] = _useState("All");
+  const [cat, setCat] = _useState(cats[0][0]);
+  const [nm, setNm] = _useState("");
+  const c = cities.find((x) => x.id === cityId);
+  const homeKey = market === "All" ? "all" : market;
+  const autoName = "Cardholders spending in " + c.city;
+  const focus = LuneGeo.CATEGORIES[cat].label + " spend";
+
+  function create() {
+    onCreate({
+      id: "new-" + Date.now(),
+      name: nm.trim() || autoName,
+      city: c, market, focus, status: "Draft",
+      size: c.uniqueCards, spend: LuneGeo.effVol(c, homeKey),
+    });
+  }
+
+  return (
+    <div className="lg-modal" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="lg-modal__card" role="dialog" aria-modal="true" aria-label="New segment">
+        <div className="lg-modal__head">
+          <div>
+            <div className="lg-eyebrow">Audiences</div>
+            <div className="lg-modal__title">New segment</div>
+          </div>
+          <button className="lg-modal__x" onClick={onClose} aria-label="Close">
+            <Glyph name="plus" size={16} style={{ transform: "rotate(45deg)" }} />
+          </button>
+        </div>
+
+        <label className="lg-modal__lab" htmlFor="sb-name">Segment name</label>
+        <input id="sb-name" className="lg-modal__input" value={nm} placeholder={autoName}
+               onChange={(e) => setNm(e.target.value)} />
+
+        <label className="lg-modal__lab" htmlFor="sb-city">Destination city</label>
+        <select id="sb-city" className="lg-modal__input" value={cityId} onChange={(e) => setCityId(e.target.value)}>
+          {cities.map((x) => <option key={x.id} value={x.id}>{x.city} · {x.country}</option>)}
+        </select>
+
+        <label className="lg-modal__lab">Home market</label>
+        <div className="lg-modal__seg">
+          {["All", "UAE", "KSA"].map((m) => (
+            <button key={m} className={market === m ? "is-active" : ""} onClick={() => setMarket(m)}>{m === "All" ? "All markets" : m}</button>
+          ))}
+        </div>
+
+        <label className="lg-modal__lab" htmlFor="sb-focus">Spend focus</label>
+        <select id="sb-focus" className="lg-modal__input" value={cat} onChange={(e) => setCat(e.target.value)}>
+          {cats.map(([k, lbl]) => <option key={k} value={k}>{lbl} spend</option>)}
+        </select>
+
+        <div className="lg-modal__preview">
+          <div><span>Est. cardholders</span><b>{fmtNum(c.uniqueCards)}</b></div>
+          <div><span>Est. spend · 90d</span><b>{fmtBig(LuneGeo.effVol(c, homeKey))}</b></div>
+        </div>
+
+        <div className="lg-modal__foot">
+          <button className="lg-btn lg-btn--ghost" onClick={onClose}>Cancel</button>
+          <button className="lg-btn lg-btn--primary" onClick={create}><Glyph name="sparkle" size={15} />Create draft</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SegmentsPage({ draft }) {
+  const saved = _useMemo(buildSaved, []);
+  const [created, setCreated] = _useState([]);
+  const all = [...(draft ? [draft] : []), ...created, ...saved];
+  const [selId, setSelId] = _useState(draft ? draft.id : saved[0].id);
+  const [q, setQ] = _useState("");
+  const [building, setBuilding] = _useState(false);
+  _useEffect(() => { if (draft) setSelId(draft.id); }, [draft]);
+  _useEffect(() => {
+    if (!building) return;
+    const fn = (e) => { if (e.key === "Escape") setBuilding(false); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [building]);
+  const seg = all.find((s) => s.id === selId) || all[0];
+
+  const shown = q ? all.filter((s) => (s.name + " " + s.city.city + " " + s.focus).toLowerCase().includes(q.toLowerCase())) : all;
+  const GROUPS = [["Draft", "Drafts"], ["Active", "Active"], ["Paused", "Paused"]];
+  const activeN = all.filter((s) => s.status === "Active").length;
+
+  return (
+    <div className="lg-page">
+      <header className="lg-page__head lg-seghead">
+        <div>
+          <div className="lg-eyebrow">Audiences</div>
+          <div className="lg-page__title">Segments</div>
+          <div className="lg-page__sub">{all.length} segments · {activeN} active · built from cross-border spend</div>
+        </div>
+        <button className="lg-btn lg-btn--primary" onClick={() => setBuilding(true)}>
+          <Glyph name="plus" size={15} />New segment
+        </button>
+      </header>
+
+      {building && (
+        <SegmentBuilder
+          onClose={() => setBuilding(false)}
+          onCreate={(seg) => { setCreated((p) => [seg, ...p]); setSelId(seg.id); setBuilding(false); }}
+        />
+      )}
+
+      <div className="lg-page--split lg-page--split-inner">
+        <aside className="lg-seglist">
+          <div className="lg-segsearch">
+            <Glyph name="search" size={14} />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search segments" aria-label="Search segments" />
+          </div>
+          {GROUPS.map(([st, label]) => {
+            const items = shown.filter((s) => s.status === st);
+            if (!items.length) return null;
+            return (
+              <div key={st} className="lg-seggroup">
+                <div className="lg-seggroup__lab">{label} · {items.length}</div>
+                {items.map((s) => (
+                  <button key={s.id} className={"lg-segitem" + (s.id === selId ? " is-active" : "")} onClick={() => setSelId(s.id)}>
+                    <span className="lg-catdot" style={{ background: LuneGeo.REGIONS[s.city.region].color }} />
+                    <div className="lg-segitem__b"><span className="nm">{s.name}</span><span className="mt">{s.city.city} · {fmtNum(s.size)} cardholders</span></div>
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+          {!shown.length && <div className="lg-seggroup__empty">No segments match &ldquo;{q}&rdquo;</div>}
+        </aside>
+        <SegmentDetail seg={seg} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Empty placeholder ---------------- */
+function EmptyPage({ icon, title, sub }) {
+  return (
+    <div className="lg-page lg-empty">
+      <div className="lg-empty__box">
+        <Glyph name={icon} size={30} stroke />
+        <div className="lg-empty__t">{title}</div>
+        <div className="lg-empty__s">{sub}</div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { ComparePage, SegmentsPage, EmptyPage, buildSaved });
+
+</script>
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   Lune Geo — map engine + app (cross-border spend, B2B)
+   ============================================================ */
+
+const HOME_BOUNDS = L.latLngBounds(LuneGeo.CITIES.map((c) => [c.lat, c.lng])).pad(0.08);
+
+const TILES = {
+  dark:  { url: "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+           labels: "https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png" },
+  light: { url: "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+           labels: "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" },
+};
+const ATTR = '&copy; <a href="https://carto.com/">CARTO</a> · &copy; OpenStreetMap';
+
+const VOLS = LuneGeo.CITIES.map((c) => c.volume);
+const VMIN = Math.sqrt(Math.min(...VOLS)), VMAX = Math.sqrt(Math.max(...VOLS));
+function diaFor(v) {
+  const n = (Math.sqrt(Math.max(v, 1)) - VMIN) / (VMAX - VMIN || 1);
+  return Math.round(13 + Math.max(0, n) * 34);
+}
+
+function bubbleHTML(color, dia, selected, pulse) {
+  const ring = (selected && pulse) ? `<span class="lg-pin__ring" style="width:${dia}px;height:${dia}px"></span>` : "";
+  return `<div class="lg-bub${selected ? " is-selected" : ""}">${ring}
+    <span class="lg-bub__glow" style="width:${dia}px;height:${dia}px;background:${color};color:${color}"></span>
+    <span class="lg-bub__core" style="width:${Math.max(6, dia * 0.34)}px;height:${Math.max(6, dia * 0.34)}px;background:${color}"></span>
+  </div>`;
+}
+
+function arcPoints(a, b, bend = 0.18, n = 64) {
+  const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const dLat = b[0] - a[0], dLng = b[1] - a[1];
+  const dist = Math.hypot(dLat, dLng) || 1;
+  let perp = [-dLng / dist, dLat / dist];
+  if (perp[0] < 0) perp = [-perp[0], -perp[1]];
+  const cp = [mid[0] + perp[0] * bend * dist, mid[1] + perp[1] * bend * dist];
+  const out = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    out.push([u * u * a[0] + 2 * u * t * cp[0] + t * t * b[0], u * u * a[1] + 2 * u * t * cp[1] + t * t * b[1]]);
+  }
+  return out;
+}
+
+function MapCanvas({ items, vizMode, home, theme, accent, selectedId, pulse, panelSide, onSelect, onReady }) {
+  const elRef = useRef(null), mapRef = useRef(null), baseRef = useRef(null), labelRef = useRef(null), layersRef = useRef([]);
+  const propsRef = useRef({});
+  propsRef.current = { panelSide, onSelect };
+
+  useEffect(() => {
+    const map = L.map(elRef.current, {
+      zoomControl: false, attributionControl: true, worldCopyJump: true,
+      zoomSnap: 1, zoomDelta: 1, minZoom: 2, maxZoom: 12, preferCanvas: false,
+      zoomAnimation: false, markerZoomAnimation: false, fadeAnimation: false,
+    });
+    map.fitBounds(HOME_BOUNDS, { padding: [30, 30] });
+    L.control.attribution({ prefix: false }).addTo(map);
+    mapRef.current = map; window.__geoMap = map;
+    // The container's final size isn't settled on first paint (fonts/layout),
+    // so the initial fitBounds clamps to maxZoom. Keep refitting to the world
+    // view on every resize until the user first interacts with the map.
+    let autoFit = true;
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize();
+      if (autoFit) map.fitBounds(HOME_BOUNDS, { padding: [30, 30] });
+    });
+    ro.observe(elRef.current);
+    const stopAutoFit = () => { autoFit = false; };
+    ["wheel", "mousedown", "touchstart"].forEach((ev) =>
+      elRef.current.addEventListener(ev, stopAutoFit, { once: true, passive: true }));
+    const onResize = () => map.invalidateSize();
+    window.addEventListener("resize", onResize);
+    const focus = (id) => {
+      const c = LuneGeo.CITIES.find((x) => x.id === id); if (!c) return;
+      const tz = Math.max(map.getZoom(), 5);
+      const pt = map.project([c.lat, c.lng], tz);
+      pt.x += (propsRef.current.panelSide === "right" ? 180 : -180);
+      map.setView(map.unproject(pt, tz), tz, { animate: true, duration: 0.6 });
+    };
+    onReady({
+      zoom: (d) => map.setZoom(Math.round(map.getZoom()) + d),
+      reset: () => map.fitBounds(HOME_BOUNDS, { padding: [30, 30], animate: true, duration: 0.6 }),
+      focus,
+    });
+    return () => { ro.disconnect(); window.removeEventListener("resize", onResize); map.remove(); };
+  }, []);
+
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    const t = TILES[theme];
+    if (baseRef.current) map.removeLayer(baseRef.current);
+    if (labelRef.current) map.removeLayer(labelRef.current);
+    baseRef.current = L.tileLayer(t.url, { subdomains: "abcd", maxZoom: 20, attribution: ATTR }).addTo(map);
+    labelRef.current = L.tileLayer(t.labels, { subdomains: "abcd", maxZoom: 20, pane: "shadowPane", opacity: 0.85 }).addTo(map);
+  }, [theme]);
+
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    layersRef.current.forEach((l) => map.removeLayer(l));
+    layersRef.current = [];
+    const push = (l) => { l.addTo(map); layersRef.current.push(l); };
+
+    if (vizMode === "heat") {
+      const pts = items.map((it) => {
+        const n = (Math.sqrt(Math.max(it.value, 1)) - VMIN) / (VMAX - VMIN || 1);
+        return [it.lat, it.lng, 0.45 + Math.max(0, n) * 0.55];
+      });
+      push(L.heatLayer(pts, {
+        radius: 55, blur: 32, max: 1.0, maxZoom: 9, minOpacity: 0.5,
+        gradient: { 0.15: "rgba(58,82,180,0.5)", 0.35: "#5468C9", 0.55: "#9B5DE0", 0.72: "#F2607A", 0.86: "#FF7A45", 1: "#FFE08A" },
+      }));
+      return;
+    }
+
+    const marker = (it, dia) => {
+      const sel = it.id === selectedId;
+      const m = L.marker([it.lat, it.lng], {
+        icon: L.divIcon({ className: "lg-bub-wrap", html: bubbleHTML(it.color, dia, sel, pulse), iconSize: [dia, dia], iconAnchor: [dia / 2, dia / 2] }),
+        riseOnHover: true, zIndexOffset: sel ? 1000 : Math.round(dia),
+      });
+      m.bindTooltip(
+        `<div class="lg-tip__name">${it.city}<span style="color:${it.color}"> · ${it.country}</span></div>
+         <div class="lg-tip__sub">${fmtBig(it.value)} · ${it.topCat}-led</div>`,
+        { className: "lg-tip", direction: "top", offset: [0, -dia / 2 - 2], opacity: 1 });
+      m.on("click", () => propsRef.current.onSelect(it.id));
+      return m;
+    };
+
+    if (vizMode === "flows") {
+      const activeOrigins = home === "all" ? ["UAE", "KSA"] : [home];
+      items.filter((it) => !it.domestic).forEach((it) => {
+        activeOrigins.forEach((ok) => {
+          const ov = home === "all" ? it.value * (ok === "UAE" ? it.uaeShare : 1 - it.uaeShare) : it.value;
+          const n = (Math.sqrt(Math.max(ov, 1)) - VMIN) / (VMAX - VMIN || 1);
+          const o = LuneGeo.ORIGINS[ok];
+          const pts = arcPoints([o.lat, o.lng], [it.lat, it.lng]);
+          const w = 1 + Math.max(0, n) * 4;
+          // base arc (faint, steady) + bright comet dash on top
+          push(L.polyline(pts, {
+            className: "lg-flow-base", color: it.color, weight: w + 1.5, opacity: 0.16, lineCap: "round",
+          }));
+          push(L.polyline(pts, {
+            className: "lg-flow", color: it.color, weight: w, opacity: 0.65, lineCap: "round",
+          }));
+        });
+      });
+      items.filter((it) => !it.domestic).forEach((it) => push(marker(it, Math.max(14, diaFor(it.value) * 0.6))));
+      activeOrigins.forEach((ok) => {
+        const o = LuneGeo.ORIGINS[ok];
+        push(L.marker([o.lat, o.lng], {
+          icon: L.divIcon({ className: "lg-hub-wrap", html:
+            `<div class="lg-hub"><span class="lg-hub__pulse"></span><span class="lg-hub__core"></span></div><span class="lg-hub__label">${o.city}</span>`,
+            iconSize: [18, 18], iconAnchor: [9, 9] }), zIndexOffset: 2000,
+        }));
+      });
+      return;
+    }
+
+    items.forEach((it) => push(marker(it, diaFor(it.value))));
+  }, [items, vizMode, home, selectedId, accent, pulse]);
+
+  return <div id="map" ref={elRef} />;
+}
+
+/* ---------------- App ---------------- */
+// Brand-color presets — neutral slate default; banks pick their own.
+const BRANDS = ["#2F8C82", "#10A37F", "#475569", "#1E3A8A", "#3852B4", "#8C2F39"];
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "#2F8C82",
+  "panelSide": "right",
+  "density": "comfortable",
+  "pulse": true
+}/*EDITMODE-END*/;
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [query, setQuery] = useState("");
+  const [vizMode, setVizMode] = useState("bubbles");
+  const [lens, setLens] = useState("region");
+  const [home, setHome] = useState("all");
+  const [activeRegions, setActiveRegions] = useState(() => new Set(LuneGeo.REGION_ORDER));
+  const [activeCats, setActiveCats] = useState(() => new Set(LuneGeo.CAT_ORDER));
+  const [activeBrands, setActiveBrands] = useState(() => new Set(LuneGeo.BRANDS.map((b) => b.name)));
+  const [demographics, setDemographics] = useState(true);
+  const [selectedId, setSelectedId] = useState(null);
+  const [page, setPage] = useState("map");
+  const [compareCities, setCompareCities] = useState(["c6", "c8", "c18"]);
+  const [draftSegment, setDraftSegment] = useState(null);
+  const apiRef = useRef(null);
+
+  useEffect(() => {
+    const fn = (e) => { if (e.data && e.data.type === "lg-nav" && e.data.page) setPage(e.data.page); };
+    window.addEventListener("message", fn);
+    return () => window.removeEventListener("message", fn);
+  }, []);
+
+  const accentSoft = `color-mix(in srgb, ${t.accent} 16%, transparent)`;
+  const active = lens === "region" ? activeRegions : lens === "category" ? activeCats : activeBrands;
+
+  const queryMatched = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return LuneGeo.CITIES;
+    return LuneGeo.CITIES.filter((c) =>
+      c.city.toLowerCase().includes(q) || c.country.toLowerCase().includes(q) ||
+      LuneGeo.REGIONS[c.region].label.toLowerCase().includes(q));
+  }, [query]);
+
+  // list items (regions or categories) with volumes for the panel
+  const listItems = useMemo(() => {
+    if (lens === "region") {
+      const vol = {};
+      queryMatched.forEach((c) => { vol[c.region] = (vol[c.region] || 0) + LuneGeo.effVol(c, home); });
+      return LuneGeo.REGION_ORDER.map((r) => ({ key: r, label: LuneGeo.REGIONS[r].label, color: LuneGeo.REGIONS[r].color, vol: vol[r] || 0 }));
+    }
+    if (lens === "category") {
+      const vol = {};
+      queryMatched.forEach((c) => { LuneGeo.CAT_ORDER.forEach((cat) => { vol[cat] = (vol[cat] || 0) + LuneGeo.catVol(c, cat, home); }); });
+      return LuneGeo.CAT_ORDER.map((cat) => ({ key: cat, cat, label: LuneGeo.CATEGORIES[cat].label, color: LuneGeo.CATEGORIES[cat].color, vol: vol[cat] || 0 }))
+        .filter((x) => x.vol > 0).sort((a, b) => b.vol - a.vol);
+    }
+    const vol = {};
+    queryMatched.forEach((c) => { LuneGeo.BRANDS.forEach((b) => { vol[b.name] = (vol[b.name] || 0) + LuneGeo.brandVol(c, b.name, home); }); });
+    return LuneGeo.BRANDS.map((b) => ({ key: b.name, brand: true, name: b.name, cat: b.cat, color: b.color, label: b.name, vol: vol[b.name] || 0 }))
+      .filter((x) => x.vol > 0).sort((a, b) => b.vol - a.vol);
+  }, [lens, queryMatched, home]);
+
+  // map items: value + color per city under current lens
+  const items = useMemo(() => {
+    const out = [];
+    queryMatched.forEach((c) => {
+      let value, color;
+      if (lens === "region") {
+        if (!activeRegions.has(c.region)) return;
+        value = LuneGeo.effVol(c, home);
+        color = LuneGeo.REGIONS[c.region].color;
+      } else if (lens === "category") {
+        value = 0; let best = null, bv = -1;
+        activeCats.forEach((cat) => {
+          const v = LuneGeo.catVol(c, cat, home);
+          value += v;
+          if (v > bv) { bv = v; best = cat; }
+        });
+        if (value <= 0 || !best) return;
+        color = LuneGeo.CATEGORIES[best].color;
+      } else {
+        value = 0; let best = null, bv = -1;
+        activeBrands.forEach((name) => {
+          const v = LuneGeo.brandVol(c, name, home);
+          if (v > 0) { value += v; if (v > bv) { bv = v; best = name; } }
+        });
+        if (value <= 0 || !best) return;
+        color = LuneGeo.BRAND_BY_NAME[best].color;
+      }
+      out.push({ id: c.id, lat: c.lat, lng: c.lng, domestic: c.domestic, uaeShare: c.uaeShare, value, color, city: c.city, country: c.country, topCat: LuneGeo.CATEGORIES[c.cats[0].cat].label });
+    });
+    return out;
+  }, [lens, queryMatched, home, activeRegions, activeCats, activeBrands]);
+
+  const stats = useMemo(() => {
+    let volume = 0, txns = 0, intl = 0; const countries = new Set();
+    items.forEach((it) => {
+      volume += it.value; countries.add(it.country);
+      const c = LuneGeo.CITIES.find((x) => x.id === it.id);
+      const full = LuneGeo.effVol(c, home) || 1;
+      txns += LuneGeo.effTxns(c, home) * (it.value / full);
+      if (!it.domestic) intl += it.value;
+    });
+    return { volume, txns, countries: countries.size, intlPct: volume ? (intl / volume) * 100 : 0 };
+  }, [items, home]);
+
+  useEffect(() => {
+    if (selectedId && !items.some((it) => it.id === selectedId)) setSelectedId(null);
+  }, [items, selectedId]);
+  useEffect(() => {
+    if (vizMode === "flows" && selectedId) {
+      const c = LuneGeo.CITIES.find((x) => x.id === selectedId);
+      if (c && c.domestic) setSelectedId(null);
+    }
+  }, [vizMode, selectedId]);
+
+  const selected = useMemo(() => LuneGeo.CITIES.find((c) => c.id === selectedId) || null, [selectedId]);
+
+  const onToggle = (key) => {
+    if (lens === "region") setActiveRegions((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
+    else if (lens === "category") setActiveCats((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
+    else setActiveBrands((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
+  };
+  const onAll = () => lens === "region" ? setActiveRegions(new Set(LuneGeo.REGION_ORDER)) : lens === "category" ? setActiveCats(new Set(LuneGeo.CAT_ORDER)) : setActiveBrands(new Set(LuneGeo.BRANDS.map((b) => b.name)));
+  const onClear = () => lens === "region" ? setActiveRegions(new Set()) : lens === "category" ? setActiveCats(new Set()) : setActiveBrands(new Set());
+
+  const onSelect = (id) => { setSelectedId(id); if (apiRef.current) setTimeout(() => apiRef.current.focus(id), 70); };
+
+  const onBuildSegment = (c) => {
+    setDraftSegment({
+      id: "draft", name: `Cardholders spending in ${c.city}`, city: c,
+      market: home === "all" ? "All" : home,
+      focus: LuneGeo.CATEGORIES[c.cats[0].cat].label + " spend",
+      status: "Draft", size: c.uniqueCards, spend: LuneGeo.effVol(c, home),
+    });
+    setPage("segments");
+  };
+
+  const panelSide = t.panelSide;
+  const filtersSide = panelSide === "right" ? "left" : "right";
+
+  return (
+    <div className={"lg-app density-" + t.density} data-theme="light"
+      style={{ "--lg-accent": t.accent, "--lg-accent-soft": accentSoft }}>
+      <Sidebar page={page} onNav={setPage} />
+      <div className="lg-main">
+        {page === "map" && (
+          <>
+            <TopBar query={query} onQuery={setQuery} stats={stats} theme={t.theme}
+              onToggleTheme={() => setTweak("theme", t.theme === "dark" ? "light" : "dark")} />
+            <div className="lg-stage">
+              <MapCanvas items={items} vizMode={vizMode} home={home} theme="light" accent={t.accent}
+                selectedId={selectedId} pulse={t.pulse} panelSide={panelSide}
+                onSelect={onSelect} onReady={(api) => (apiRef.current = api)} />
+
+              <FilterPanel side={filtersSide} vizMode={vizMode} onViz={setVizMode}
+                lens={lens} onLens={setLens} home={home} onHome={setHome}
+                listItems={listItems} active={active} onToggle={onToggle} onAll={onAll} onClear={onClear}
+                demographics={demographics} onDemographics={setDemographics} />
+
+              <ZoomControls side={filtersSide}
+                onZoom={(d) => apiRef.current && apiRef.current.zoom(d)}
+                onReset={() => apiRef.current && apiRef.current.reset()} />
+
+              {!selected && (
+                <div className="lg-card lg-hint" style={{ [panelSide]: 16 }}>
+                  <Glyph name="globe" size={15} />
+                  {vizMode === "flows"
+                    ? "Click a destination to see what's flowing there — by category & brand"
+                    : "Select a city to inspect enriched spend"}
+                </div>
+              )}
+
+              <CityDetail side={panelSide} city={selected} home={home} demographics={demographics}
+                onBuild={onBuildSegment} onClose={() => setSelectedId(null)} />
+            </div>
+          </>
+        )}
+
+        {page === "compare" && <ComparePage cities={compareCities} onSetCities={setCompareCities} home={home} />}
+        {page === "segments" && <SegmentsPage draft={draftSegment} />}
+        {page === "cardholders" && <EmptyPage icon="card" title="Cardholders" sub="Cohort profiles & lifecycle — coming soon" />}
+        {page === "enrich" && <EmptyPage icon="sparkle" title="Enrich" sub="Transaction enrichment pipeline & coverage — coming soon" />}
+      </div>
+
+      <TweaksPanel>
+        <TweakSection label="Brand" />
+        <TweakColor label="Brand color" value={t.accent} options={BRANDS} onChange={(v) => setTweak("accent", v)} />
+        <TweakToggle label="Pulse selected city" value={t.pulse} onChange={(v) => setTweak("pulse", v)} />
+        <TweakSection label="Layout" />
+        <TweakRadio label="Detail panel" value={t.panelSide} options={["left", "right"]} onChange={(v) => setTweak("panelSide", v)} />
+        <TweakRadio label="Density" value={t.density} options={["comfortable", "compact"]} onChange={(v) => setTweak("density", v)} />
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+</script>
+</body>
+</html>

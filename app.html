@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>LuneHub — Lune</title>
+<meta name="description" content="LuneHub: the command center for the Lune platform." />
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="stylesheet" href="lunehub.css?v=17" />
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div class="lh-login" id="lh-login">
+  <div class="lh-login-glow" aria-hidden="true"></div>
+  <div class="lh-login-crescent" aria-hidden="true"></div>
+  <form class="lh-login-card" id="lh-login-form" novalidate>
+    <img class="logo" src="assets/lune-logo.png" alt="Lune" />
+    <h1>Welcome to LuneHub</h1>
+    <p class="sub">Sign in to your workspace.</p>
+    <div class="lh-field">
+      <label for="lh-email">Work email</label>
+      <input id="lh-email" type="email" placeholder="you@company.com" autocomplete="email" />
+    </div>
+    <div class="lh-field">
+      <label for="lh-pass">Password</label>
+      <input id="lh-pass" type="password" placeholder="••••••••••" autocomplete="current-password" />
+    </div>
+    <button class="lh-login-btn" type="submit">Sign in</button>
+    <div class="lh-or"><span>or</span></div>
+    <button class="lh-login-alt" type="button" id="lh-sso">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="7" width="11" height="6.5" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect><path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+      Continue with SSO
+    </button>
+    <div class="lh-login-foot">
+      <a href="#">Forgot password?</a>
+      <span>SSO enabled</span>
+    </div>
+  </form>
+  <p class="lh-login-note">Protected workspace · SOC 2 · ISO 27001</p>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="lh-app">
+  <aside class="lh-side">
+    <div class="lh-brand">
+      <img src="assets/lune-logo.png" alt="Lune" />
+      <button class="lh-collapse" id="lh-collapse" aria-label="Collapse sidebar">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M8.5 3.5 5 7l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+    </div>
+    <nav class="lh-nav" aria-label="App">
+      <button class="lh-item on" data-view="overview">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="5.2" height="5.2" rx="1.2" stroke="currentColor" stroke-width="1.4"></rect><rect x="10.3" y="2.5" width="5.2" height="5.2" rx="1.2" stroke="currentColor" stroke-width="1.4"></rect><rect x="2.5" y="10.3" width="5.2" height="5.2" rx="1.2" stroke="currentColor" stroke-width="1.4"></rect><rect x="10.3" y="10.3" width="5.2" height="5.2" rx="1.2" stroke="currentColor" stroke-width="1.4"></rect></svg>
+        <span>Overview</span>
+      </button>
+      <button class="lh-item open" data-group="enrich">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path d="M8 2.2 9.5 6.2 13.5 7.7 9.5 9.2 8 13.2 6.5 9.2 2.5 7.7 6.5 6.2 8 2.2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"></path><path d="M14 11.5v4M12 13.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+        <span>Enrichment</span>
+        <svg class="chev" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <div class="lh-sub" id="sub-enrich">
+        <button class="lh-item" data-view="transactions"><span>Transactions</span></button>
+      </div>
+      <button class="lh-item open" data-group="analytics">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path d="M3 15V8M7.5 15V3M12 15v-5M16 15H2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        <span>Analytics</span>
+        <svg class="chev" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <div class="lh-sub" id="sub-analytics">
+        <button class="lh-item" data-view="dashboard"><span>Dashboard</span></button>
+        <button class="lh-item" data-view="explorer"><span>Explorer</span></button>
+        <button class="lh-item" data-view="geo"><span>Spend Map</span></button>
+      </div>
+      <button class="lh-item open" data-group="pulse">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="1.5" fill="currentColor"></circle><path d="M5.8 12.2a4.5 4.5 0 0 1 0-6.4M12.2 5.8a4.5 4.5 0 0 1 0 6.4M3.6 14.4a7.6 7.6 0 0 1 0-10.8M14.4 3.6a7.6 7.6 0 0 1 0 10.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+        <span>Pulse</span>
+        <svg class="chev" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <div class="lh-sub" id="sub-pulse">
+        <button class="lh-item" data-view="pulse"><span>Campaign Manager</span></button>
+      </div>
+    </nav>
+    <div class="lh-user" id="lh-user" role="button" tabindex="0" title="Profile & settings" data-comment-anchor="user-card">
+      <span class="lh-ava">DJ</span>
+      <div>
+        <div class="nm">Dennis Jedburgh</div>
+        <div class="pl">ADIB</div>
+      </div>
+      <button class="lh-signout" id="lh-signout" title="Sign out" aria-label="Sign out">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 14H3.5A1.5 1.5 0 0 1 2 12.5v-9A1.5 1.5 0 0 1 3.5 2H6M10.5 11.5 14 8l-3.5-3.5M14 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+    </div>
+  </aside>
+
+  <main class="lh-main">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="lh-view active" id="view-overview" data-screen-label="Overview">
+      <div class="lh-head">
+        <div><h1>Overview</h1></div>
+        <div class="lh-filters">
+          <span class="lh-pill">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+            01 Jan 2026 – 31 Dec 2026
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+      </div>
+      <div class="lh-grid-2">
+        <div class="lh-card lh-kpi">
+          <div class="t">Total Number of Users
+            <span class="ic"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><circle cx="6.5" cy="6" r="2.5" stroke="currentColor" stroke-width="1.4"></circle><path d="M2.5 14.5c.5-2.5 2-3.8 4-3.8s3.5 1.3 4 3.8M12 8.7a2.4 2.4 0 1 0-1.4-4.4M12.2 10.8c1.8.2 3 1.4 3.4 3.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg></span>
+          </div>
+          <div class="n" id="ov-users">42,073</div>
+        </div>
+        <div class="lh-card lh-kpi">
+          <div class="t">Transaction Usage
+            <span class="ic"><svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M3 13.5 7 9l3 2.6 5-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          </div>
+          <div class="lh-progress"><i id="ov-usage-bar" style="width:32.3%"></i></div>
+          <div class="n"><span id="ov-usage">3,875,293</span> <small id="ov-usage-max">/ 12,000,000</small></div>
+          <div class="lh-kpi-cap" id="ov-usage-cap">32.3% of annual quota · 8,124,707 remaining</div>
+        </div>
+      </div>
+      <div class="lh-grid-3 lh-section-gap">
+        <button class="lh-card lh-short" data-view="pulse">
+          <span class="lh-short-t">Review Marhaba Mart campaigns</span>
+          <span class="lh-short-d">12 campaigns across categories awaiting your decision</span>
+          <span class="lh-short-go">Open Campaign Manager
+            <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h8M7.5 4 11 7.5 7.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </button>
+        <button class="lh-card lh-short" data-view="explorer">
+          <span class="lh-short-t">Explore enriched data</span>
+          <span class="lh-short-d">Top UAE brands and categories with full metrics</span>
+          <span class="lh-short-go">Open Explorer
+            <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h8M7.5 4 11 7.5 7.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </button>
+        <button class="lh-card lh-short" data-view="geo">
+          <span class="lh-short-t">Map cross-border spend</span>
+          <span class="lh-short-d">Merchant geography, city comparison and segments</span>
+          <span class="lh-short-go">Open Spend Map
+            <svg width="13" height="13" viewBox="0 0 15 15" fill="none"><path d="M3 7.5h8M7.5 4 11 7.5 7.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </button>
+      </div>
+      <div class="lh-card lh-section-gap">
+        <div class="lh-card-head">
+          <h3>Transactions by Date</h3>
+          <span class="lh-pill">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+            11 May 2026 – 10 Jun 2026
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="lh-bars" id="ov-bars"></div>
+        <div class="lh-xlab"><span>11 May</span><span>14 May</span><span>17 May</span><span>20 May</span><span>23 May</span><span>26 May</span><span>29 May</span><span>01 Jun</span><span>04 Jun</span><span>07 Jun</span><span>10 Jun</span></div>
+        <div class="lh-chart-cap" id="ov-cap"></div>
+      </div>
+    </section>
+
+    <!-- ============ TRANSACTIONS ============ -->
+    <section class="lh-view" id="view-transactions" data-screen-label="Transactions">
+      <div class="lh-head">
+        <div><h1>Transactions</h1></div>
+      </div>
+      <div class="lh-head" style="margin-bottom:14px">
+        <div class="lh-filters">
+          <span class="lh-search">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"></circle><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+            <input id="tx-search" type="text" placeholder="Search raw description" />
+          </span>
+          <span class="lh-search">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"></circle><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path><path d="M5 7h4M5 5h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"></path></svg>
+            <input id="tx-id" type="text" placeholder="Enter Transaction ID" />
+          </span>
+          <button class="lh-pill" id="tx-filter-btn">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4.5 8h7M7 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+            Filter
+          </button>
+        </div>
+        <button class="lh-btn lh-btn--accent" id="lh-report" disabled>
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3.5 14V2.5M3.5 3h8.2l-1.6 2.8 1.6 2.8H3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Report selected
+        </button>
+      </div>
+      <div class="lh-card lh-tablewrap" style="padding:6px 8px">
+        <table class="lh-table">
+          <thead><tr>
+            <th style="width:36px"><input type="checkbox" id="lh-cb-all" aria-label="Select all"></th>
+            <th>Logo</th>
+            <th class="sortable" data-sort="id">ID <span class="sort">▼</span></th>
+            <th class="sortable" data-sort="desc">Raw Description <span class="sort">▼</span></th>
+            <th>Brand</th><th>Category</th>
+            <th class="sortable" data-sort="date">Date <span class="sort">▼</span></th>
+            <th class="num sortable" data-sort="amount">Amount <span class="sort">▼</span></th>
+            <th class="sortable" data-sort="currency">Currency <span class="sort">▼</span></th>
+            <th></th>
+          </tr></thead>
+          <tbody id="tb-tx"></tbody>
+        </table>
+        <div class="lh-count" id="tx-count"></div>
+        <div class="lh-pager" id="tx-pager"></div>
+      </div>
+    </section>
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="lh-view" id="view-dashboard" data-screen-label="Dashboard">
+      <div class="lh-head">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="sub">Brand and category spend analytics · 10 Dec 2025 – 10 Jun 2026</p>
+        </div>
+        <div class="lh-filters">
+          <span class="lh-pill">AED <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">Last 6 months <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">All Countries <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </div>
+      </div>
+      <div class="lh-note">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"></circle><path d="M8 7.5V11M8 5.2v.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+        No ATM data is present on this dashboard.
+      </div>
+      <div class="lh-grid-4">
+        <div class="lh-card lh-kpi"><div class="t">Total Customers</div><div class="n" id="kpi-customers">100</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Transactions</div><div class="n" id="kpi-transactions">50K</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Spend</div><div class="n" id="kpi-spend">AED 10M</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Spend / Customer</div><div class="n" id="kpi-spendcust">AED 100K</div></div>
+      </div>
+
+      <div class="lh-card lh-section-gap">
+        <div class="lh-card-head">
+          <h3>Spend Analytics</h3>
+          <div class="lh-total"><div class="n" id="tree-total">3.53B</div><div class="l" id="tree-total-l">Total Spend</div></div>
+        </div>
+        <div class="lh-filters">
+          <div class="lh-seg" id="tree-entity"><button class="on" data-ent="categories">Categories (13)</button><button data-ent="brands">Brands (14)</button></div>
+          <div class="lh-seg" id="tree-metric"><button class="on" data-met="spend">Total Spend</button><button data-met="customers">Customers</button><button data-met="transactions">Transactions</button></div>
+        </div>
+        <div class="lh-tree" id="spend-tree" aria-label="Spend treemap"></div>
+      </div>
+
+      <div class="lh-card lh-section-gap">
+        <div class="lh-card-head">
+          <h3>Spend over time</h3>
+          <div class="lh-total"><div class="n" id="stack-total">3.2B</div><div class="l">Total Spend</div></div>
+        </div>
+        <div class="lh-card-head">
+          <div class="lh-seg"><button>Monthly Leaders</button><button class="on">Trend Distribution</button></div>
+          <div class="lh-seg" id="stack-gran"><button data-gran="daily">Daily</button><button data-gran="weekly">Weekly</button><button class="on" data-gran="monthly">Monthly</button></div>
+        </div>
+        <div class="lh-stack" id="spend-stack"></div>
+        <div class="lh-stack-labs" id="spend-labs"></div>
+        <div class="lh-legend" id="spend-legend"></div>
+      </div>
+
+      <div class="lh-card lh-section-gap lh-tablewrap">
+        <div class="lh-card-head">
+          <h3>Brand Explorer</h3>
+          <button class="lh-pill">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M5 3v10M5 13l-2.5-2.5M5 13l2.5-2.5M11 13V3M11 3 8.5 5.5M11 3l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            Sort
+          </button>
+        </div>
+        <table class="lh-table">
+          <thead><tr><th>Brand</th><th class="num">Total Spend</th><th class="num">Transactions</th><th class="num">Customers</th></tr></thead>
+          <tbody id="tb-brands-mini"></tbody>
+        </table>
+        <div class="lh-count"><button class="lh-link" data-view="explorer">View all brands</button></div>
+      </div>
+    </section>
+
+    <!-- ============ EXPLORER ============ -->
+    <section class="lh-view" id="view-explorer" data-screen-label="Explorer">
+      <div class="lh-head">
+        <div>
+          <h1>Brand Explorer</h1>
+          <p class="sub">All enriched brands with filterable metrics</p>
+        </div>
+        <div class="lh-filters">
+          <span class="lh-pill">AED <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">Last 6 months <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">All Countries <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </div>
+      </div>
+      <div class="lh-expbar">
+        <span class="lh-search">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"></circle><path d="m10.5 10.5 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path></svg>
+          <input id="exp-search" type="text" placeholder="Search Brand" />
+        </span>
+        <div class="lh-fdrop" data-drop="cat">
+          <button type="button" class="lh-pill lh-fbtn" id="exp-cat-btn">Category <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel lh-fpanel--list" id="exp-cat-list"></div>
+        </div>
+        <div class="lh-fdrop" data-drop="spend">
+          <button type="button" class="lh-pill lh-fbtn">Total Spend <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel"><label>Minimum</label><input type="number" id="f-spend-min" placeholder="Enter Value" /><label>Maximum</label><input type="number" id="f-spend-max" placeholder="Enter Value" /></div>
+        </div>
+        <div class="lh-fdrop" data-drop="tx">
+          <button type="button" class="lh-pill lh-fbtn">Transactions <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel"><label>Minimum</label><input type="number" id="f-tx-min" placeholder="Enter Value" /><label>Maximum</label><input type="number" id="f-tx-max" placeholder="Enter Value" /></div>
+        </div>
+        <div class="lh-fdrop" data-drop="cust">
+          <button type="button" class="lh-pill lh-fbtn">Customers <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel"><label>Minimum</label><input type="number" id="f-cust-min" placeholder="Enter Value" /><label>Maximum</label><input type="number" id="f-cust-max" placeholder="Enter Value" /></div>
+        </div>
+        <div class="lh-fdrop" data-drop="spc">
+          <button type="button" class="lh-pill lh-fbtn">Spend/Customer <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel"><label>Minimum</label><input type="number" id="f-spc-min" placeholder="Enter Value" /><label>Maximum</label><input type="number" id="f-spc-max" placeholder="Enter Value" /></div>
+        </div>
+        <div class="lh-fdrop" data-drop="sort">
+          <button type="button" class="lh-pill lh-fbtn">Sort <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div class="lh-fpanel lh-fpanel--sort">
+            <label>Sort by</label>
+            <select id="f-sort-field"><option value="">Select a field</option><option value="spend">Total Spend</option><option value="tx">Transactions</option><option value="cust">Customers</option><option value="spc">Spend / Customer</option><option value="name">Brand</option></select>
+            <label>Order</label>
+            <select id="f-sort-order"><option value="desc">High to low</option><option value="asc">Low to high</option></select>
+          </div>
+        </div>
+        <button class="lh-btn lh-btn--accent lh-expapply" id="exp-apply">Apply Filters</button>
+      </div>
+      <div id="exp-brands" class="lh-card lh-tablewrap" style="padding:6px 8px">
+        <table class="lh-table">
+          <thead><tr><th>Brand</th><th>Category</th><th class="num">Total Spend</th><th class="num">Transactions</th><th class="num">Customers</th><th class="num">Spend / Customer</th></tr></thead>
+          <tbody id="tb-brands"></tbody>
+        </table>
+        <div class="lh-count" id="brand-count"></div>
+      </div>
+    </section>
+
+    <!-- ============ CATEGORY DETAIL ============ -->
+    <section class="lh-view" id="view-catdetail" data-screen-label="Category">
+      <div class="lh-head">
+        <div class="lh-title-row">
+          <button class="lh-back" id="cat-back" aria-label="Back"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <h1 id="cat-title">Category</h1>
+        </div>
+        <div class="lh-filters">
+          <span class="lh-pill">AED <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">Last 6 months <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">All Countries <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </div>
+      </div>
+      <div class="lh-grid-4">
+        <div class="lh-card lh-kpi"><div class="t">Total Spend</div><div class="n" id="cat-k-spend">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Transactions</div><div class="n" id="cat-k-tx">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Customers</div><div class="n" id="cat-k-cust">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Spend / Customer</div><div class="n" id="cat-k-spc">—</div></div>
+      </div>
+      <div class="lh-grid-2 lh-section-gap">
+        <div class="lh-card"><div class="lh-card-head"><h3><span id="cat-bars-name">Category</span>: Spend Over Time</h3><div class="lh-seg" id="cat-gran"><button data-gran="daily">Daily</button><button data-gran="weekly">Weekly</button><button class="on" data-gran="monthly">Monthly</button></div></div><div class="lh-svgchart" id="cat-bars"></div></div>
+        <div class="lh-card"><div class="lh-card-head"><h3>Brand Share in <span id="cat-share-name">Category</span></h3></div><div id="cat-donut"></div></div>
+      </div>
+      <div class="lh-card lh-section-gap lh-tablewrap">
+        <div class="lh-card-head"><h3>Subcategories in <span id="cat-sub-name">Category</span></h3><span class="lh-count-inline" id="cat-sub-count"></span></div>
+        <table class="lh-table"><thead><tr><th>Subcategory</th><th class="num">Total Spend</th><th class="num">Transactions</th><th class="num">Customers</th></tr></thead><tbody id="cat-subs"></tbody></table>
+      </div>
+      <div class="lh-card lh-section-gap lh-tablewrap">
+        <div class="lh-card-head"><h3>Brands in <span id="cat-brands-name">Category</span></h3></div>
+        <table class="lh-table"><thead><tr><th>Brand</th><th class="num">Total Spend</th><th class="num">Transactions</th><th class="num">Customers</th></tr></thead><tbody id="cat-brands"></tbody></table>
+      </div>
+    </section>
+
+    <!-- ============ BRAND DETAIL ============ -->
+    <section class="lh-view" id="view-branddetail" data-screen-label="Brand">
+      <div class="lh-head">
+        <div class="lh-title-row">
+          <button class="lh-back" id="br-back" aria-label="Back"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg></button>
+          <div><h1 id="br-title">Brand</h1><p class="sub" id="br-cat">Category</p></div>
+        </div>
+        <div class="lh-filters">
+          <span class="lh-pill">AED <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">Last 6 months <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span class="lh-pill">All Countries <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5 6 7.5 9 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </div>
+      </div>
+      <div class="lh-grid-4">
+        <div class="lh-card lh-kpi"><div class="t">Total Spend</div><div class="n" id="br-k-spend">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Transactions</div><div class="n" id="br-k-tx">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Total Customers</div><div class="n" id="br-k-cust">—</div></div>
+        <div class="lh-card lh-kpi"><div class="t">Spend / Customer</div><div class="n" id="br-k-spc">—</div></div>
+      </div>
+      <div class="lh-grid-2 lh-section-gap">
+        <div class="lh-card"><div class="lh-card-head"><h3><span id="br-bars-name">Brand</span>: Spend Over Time</h3><div class="lh-seg" id="br-gran"><button data-gran="daily">Daily</button><button data-gran="weekly">Weekly</button><button class="on" data-gran="monthly">Monthly</button></div></div><div class="lh-svgchart" id="br-bars"></div></div>
+        <div class="lh-card"><div class="lh-card-head"><h3>Transactions by Month</h3></div><div class="lh-svgchart" id="br-area"></div></div>
+      </div>
+      <div class="lh-card lh-section-gap">
+        <div class="lh-card-head"><h3>Customer Demographics</h3><span class="lh-count-inline" id="br-demo-sub"></span></div>
+        <div class="lh-demo-grid">
+          <div class="lh-demo-panel"><h4>Age</h4><div id="br-age"></div></div>
+          <div class="lh-demo-panel"><h4>Gender</h4><div id="br-gender"></div></div>
+          <div class="lh-demo-panel"><h4>Nationality</h4><div id="br-nat"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GEO ============ -->
+    <section class="lh-view lh-view--bleed" id="view-geo" data-screen-label="Spend Map">
+      <div class="lh-modtabs" id="geo-tabs">
+        <button class="on" data-geo="map">Map</button>
+        <button data-geo="compare">Compare Cities</button>
+        <button data-geo="segments">Segments</button>
+      </div>
+      <iframe id="geo-frame" data-src="lune-geo.html?embed=1" title="Lune Geo — merchant map"></iframe>
+    </section>
+
+    <!-- ============ PULSE ============ -->
+    <section class="lh-view lh-view--bleed" id="view-pulse" data-screen-label="Pulse — Campaign Manager">
+      <iframe id="pulse-frame" data-src="lune-pulse.html?embed=1&v=2" title="Lune Pulse — Campaign Manager"></iframe>
+    </section>
+
+    <!-- ============ SETTINGS ============ -->
+    <section class="lh-view" id="view-settings" data-screen-label="Settings">
+      <div class="lh-head"><div><h1>Settings</h1></div></div>
+      <div class="lh-set-grid">
+        <div>
+          <div class="lh-card">
+            <h3>ADIB</h3>
+            <p class="lh-org">Abu Dhabi Islamic Bank · Issuer workspace</p>
+            <a class="lh-mglink" href="#">Manage your organization</a>
+            <div class="lh-profile">
+              <span class="lh-ava lh-ava--lg">DJ</span>
+              <div>
+                <div style="font-weight:700">Dennis Jedburgh <span class="lh-badge">Admin</span></div>
+                <div class="e">dennis.jedburgh@adib.ae · Joined Tue 28 Apr 2026</div>
+              </div>
+            </div>
+            <div class="lh-form-row">
+              <div class="lh-field" style="margin-top:0">
+                <label for="set-first">First name</label>
+                <input id="set-first" type="text" value="Dennis" />
+              </div>
+              <div class="lh-field" style="margin-top:0">
+                <label for="set-last">Last name</label>
+                <input id="set-last" type="text" value="Jedburgh" />
+              </div>
+            </div>
+            <div class="lh-save"><button class="lh-btn lh-btn--accent">Save changes</button></div>
+          </div>
+          <div class="lh-card">
+            <h3>Contact us</h3>
+            <p class="lh-org" style="margin-bottom:8px">Questions or assistance — we reply within 24 hours.</p>
+            <div class="lh-contact-row">
+              <div>
+                <div class="lbl">Sales &amp; pricing</div>
+                <div>partnerships@lunedata.io</div>
+              </div>
+              <button class="lh-copy" data-copy="partnerships@lunedata.io" title="Copy email" aria-label="Copy partnerships email">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+              </button>
+            </div>
+            <div class="lh-contact-row" style="border-top:1px solid var(--line)">
+              <div>
+                <div class="lbl">Product support</div>
+                <div>support@lunedata.io</div>
+              </div>
+              <button class="lh-copy" data-copy="support@lunedata.io" title="Copy email" aria-label="Copy support email">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8.5" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.3"></rect><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="lh-card">
+            <div class="lh-card-head">
+              <h3>Members</h3>
+              <button class="lh-btn lh-btn--accent">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M7 2.5v9M2.5 7h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+                Invite member
+              </button>
+            </div>
+            <div class="lh-member">
+              <span class="lh-chip" style="background:#0F4F47;width:36px;height:36px;border-radius:50%">DJ</span>
+              <div>
+                <div class="nm">Dennis Jedburgh <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" fill="#2F8C82"></circle><path d="M5.5 8.2 7.2 10l3.3-3.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                <div class="em">dennis.jedburgh@adib.ae</div>
+              </div>
+              <span class="role">Admin</span>
+              <button class="lh-kebab" aria-label="Member actions">⋮</button>
+            </div>
+            <div class="lh-member">
+              <span class="lh-chip" style="background:#2F8C82;width:36px;height:36px;border-radius:50%">AS</span>
+              <div>
+                <div class="nm">Alexis Soued <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" fill="#2F8C82"></circle><path d="M5.5 8.2 7.2 10l3.3-3.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                <div class="em">alexis.soued@adib.ae</div>
+              </div>
+              <span class="role">Member</span>
+              <button class="lh-kebab" aria-label="Member actions">⋮</button>
+            </div>
+            <div class="lh-member">
+              <span class="lh-chip" style="background:#6B8693;width:36px;height:36px;border-radius:50%">HL</span>
+              <div>
+                <div class="nm">Helal Lootah <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" fill="#2F8C82"></circle><path d="M5.5 8.2 7.2 10l3.3-3.8" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                <div class="em">helal.lootah@adib.ae</div>
+              </div>
+              <span class="role">Member</span>
+              <button class="lh-kebab" aria-label="Member actions">⋮</button>
+            </div>
+          </div>
+          <div class="lh-card">
+            <div class="lh-card-head">
+              <h3>Documentation</h3>
+              <a class="lh-btn lh-btn--ghost" href="https://docs.lunedata.io">
+                View docs
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M5.5 3H3.5A1.5 1.5 0 0 0 2 4.5v6A1.5 1.5 0 0 0 3.5 12h6A1.5 1.5 0 0 0 11 10.5V8.5M8 2h4v4M12 2 6.5 7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+              </a>
+            </div>
+            <p class="lh-org">Guides, references and resources to help you get started.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ FILTER MODAL ============ -->
+<div class="lh-modal" id="tx-filter" role="dialog" aria-modal="true" aria-label="Filter transactions">
+  <form class="lh-modal-card" id="tx-filter-form" novalidate>
+    <div class="lh-modal-head">
+      <h2>Filter</h2>
+      <button type="button" class="lh-modal-x" id="tx-filter-x" aria-label="Close">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <div class="lh-fl"><label for="f-merchant">Merchant Name</label><input id="f-merchant" type="text" placeholder="Search Merchant Name" /></div>
+    <div class="lh-fl"><label for="f-brand">Brand</label><input id="f-brand" type="text" placeholder="Search Brand" /></div>
+    <div class="lh-fl"><label for="f-category">Category</label><select id="f-category"><option value="">Select Category</option></select></div>
+    <div class="lh-fl"><label for="f-mcc">MCC</label><input id="f-mcc" type="text" inputmode="numeric" placeholder="1234" /></div>
+    <div class="lh-fl-2">
+      <div class="lh-fl"><label for="f-currency">Currency</label><select id="f-currency"><option value="">Select</option></select></div>
+      <div class="lh-fl"><label for="f-country">Country</label><select id="f-country"><option value="">Select</option><option>Saudi Arabia</option><option>Qatar</option><option>United Arab Emirates</option><option>United States</option></select></div>
+    </div>
+    <div class="lh-fl-2">
+      <div class="lh-fl"><label for="f-from">From</label><input id="f-from" type="date" /></div>
+      <div class="lh-fl"><label for="f-to">To</label><input id="f-to" type="date" /></div>
+    </div>
+    <div class="lh-fl"><label for="f-source">Source of Transaction</label><select id="f-source"><option value="">Select</option><option>Card · POS</option><option>Card · Online</option><option>Bank Transfer</option><option>ATM</option></select></div>
+    <div class="lh-fl-2">
+      <div class="lh-fl"><label for="f-rtype">Report Type</label><select id="f-rtype"><option value="">Select</option><option>Incorrect Brand</option><option>Incorrect Category</option><option>Missing Logo</option><option>Other</option></select></div>
+      <div class="lh-fl"><label for="f-rstatus">Report Status</label><select id="f-rstatus"><option value="">Select</option><option>Open</option><option>In Review</option><option>Resolved</option></select></div>
+    </div>
+    <label class="lh-check"><input type="checkbox" id="f-empty" />Show transactions with empty raw descriptions</label>
+    <div class="lh-modal-foot">
+      <button type="button" class="lh-btn lh-btn--soft" id="tx-clear">Clear</button>
+      <button type="submit" class="lh-btn lh-btn--accent">Apply</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ REPORT TRANSACTION MODAL ============ -->
+<div class="lh-modal" id="tx-report" role="dialog" aria-modal="true" aria-label="Report transaction">
+  <form class="lh-modal-card" id="tx-report-form" novalidate>
+    <div class="lh-modal-head">
+      <h2>Report transaction</h2>
+      <button type="button" class="lh-modal-x" id="tx-report-x" aria-label="Close">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <p class="lh-modal-sub" id="rp-target"></p>
+    <div class="lh-fl-2">
+      <div class="lh-fl"><label for="rp-type">Report Type</label><select id="rp-type"><option value="">Select type</option><option>Incorrect Brand Name</option><option>Incorrect Category</option><option>Incorrect Logo</option></select></div>
+      <div class="lh-fl"><label for="rp-rec">Recommendation</label><input id="rp-rec" type="text" placeholder="Recommendation" /></div>
+    </div>
+    <div class="lh-fl"><textarea id="rp-details" class="lh-textarea" rows="5" placeholder="Add more details about your feedback."></textarea></div>
+    <div class="lh-modal-foot">
+      <button type="button" class="lh-btn lh-btn--soft" id="rp-cancel">Cancel</button>
+      <button type="submit" class="lh-btn lh-btn--accent">Submit</button>
+    </div>
+  </form>
+</div>
+
+<div class="lh-tip" id="lh-tip" aria-hidden="true"></div>
+
+<!-- ============ LOGO LIGHTBOX ============ -->
+<div class="lh-logobox" id="lh-logobox" role="dialog" aria-modal="true" aria-label="Brand logo">
+  <button type="button" class="lh-logobox-x" aria-label="Close">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+  </button>
+  <figure class="lh-logobox-fig">
+    <img alt="Brand logo" />
+    <figcaption class="cap"></figcaption>
+  </figure>
+</div>
+
+<script src="lunehub-data.js?v=17"></script>
+<script src="lunehub.js?v=17"></script>
+</body>
+</html>

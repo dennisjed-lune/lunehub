@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="en" data-density="regular" data-corners="soft">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lune Pulse — Bank Journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Cormorant+Garamond:ital,wght@1,500;1,600;1,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+/* ===== ds/tokens/colors.css ===== */
+/* ============================================================
+   Lune — Color tokens
+   ------------------------------------------------------------
+   Source of truth: Lune UI Library + Category Icons (Figma) and
+   the Lune logo suite. Primary is emerald #10A37F (the crescent),
+   anchored by deep teal #002E2A and the near-black "ink" #070312.
+   ============================================================ */
+
+:root {
+  /* ---- Brand core ---- */
+  --lune-emerald:      #10A37F;  /* primary — the crescent / accent */
+  --lune-teal:         #002E2A;  /* deep forest teal — wordmark, dark surfaces */
+  --lune-teal-700:     #0A634D;  /* mid teal — category-icon green */
+  --lune-mint:         #99F2AC;  /* bright mint — success, highlights */
+  --lune-ink:          #070312;  /* near-black aubergine — dark canvas */
+  --lune-sea:          #469A93;  /* muted sea green — secondary accent */
+
+  /* ---- Emerald ramp (primary, from Figma opacity steps) ---- */
+  --primary-100:       #10A37F;
+  --primary-90:        rgba(16,163,127,0.90);
+  --primary-80:        rgba(16,163,127,0.80);
+  --primary-70:        rgba(16,163,127,0.70);
+  --primary-60:        rgba(16,163,127,0.60);
+  --primary-50:        rgba(16,163,127,0.50);
+  --primary-40:        rgba(16,163,127,0.40);
+  --primary-30:        rgba(16,163,127,0.30);
+  --primary-20:        rgba(16,163,127,0.20);
+  --primary-10:        rgba(16,163,127,0.10);
+
+  /* ---- Neutral ramp (cool, faintly teal-tinted greys) ---- */
+  --neutral-0:         #FFFFFF;
+  --neutral-25:        #F7F9F8;
+  --neutral-50:        #EEF2F1;
+  --neutral-100:       #E2E8E6;
+  --neutral-200:       #C9D3D0;
+  --neutral-300:       #A7B4B0;
+  --neutral-400:       #7E8E89;
+  --neutral-500:       #5C6B66;
+  --neutral-600:       #44524E;
+  --neutral-700:       #2E3A36;
+  --neutral-800:       #1B2421;
+  --neutral-900:       #0E1513;
+  --neutral-950:       #070312;
+
+  /* ---- Status (from the Figma status-pill set) ---- */
+  --status-success:    #99F2AC;  /* "Completed" */
+  --status-success-ink:#063D1B;
+  --status-warning:    #FBDA7D;  /* "Under Review" */
+  --status-warning-ink:#5A4205;
+  --status-info:       #5A9CB5;  /* informational (category palette) */
+  --status-info-ink:   #0C3543;
+  --status-error:      #F26076;  /* declined / error (category palette) */
+  --status-error-ink:  #5C0C18;
+
+  /* ---- Category accent hues (from Category Icons "Colours") ---- */
+  --cat-dining:        #FF7444;
+  --cat-grocery:       #E76F2E;
+  --cat-shopping:      #F26076;
+  --cat-wellness:      #F49BAB;
+  --cat-transport:     #5A9CB5;
+  --cat-travel:        #6F8F72;
+  --cat-financial:     #3852B4;
+  --cat-savings:       #A594F9;
+  --cat-income:        #0A634D;
+  --cat-household:     #C4A484;
+  --cat-student:       #B7BDF7;
+  --cat-misc:          #758A93;
+
+  /* ============================================================
+     Semantic aliases — light theme (default)
+     ============================================================ */
+  --bg-canvas:         var(--neutral-25);
+  --bg-surface:        var(--neutral-0);
+  --bg-raised:         var(--neutral-0);
+  --bg-sunken:         var(--neutral-50);
+  --bg-inverse:        var(--lune-ink);
+
+  --surface-card:      var(--neutral-0);
+  --surface-muted:     var(--neutral-50);
+  --surface-emerald:   var(--primary-10);
+
+  --text-primary:      var(--lune-teal);
+  --text-secondary:    var(--neutral-600);
+  --text-tertiary:     var(--neutral-400);
+  --text-on-emerald:   var(--neutral-0);
+  --text-on-inverse:   var(--neutral-0);
+  --text-link:         var(--lune-emerald);
+
+  --border-subtle:     var(--neutral-100);
+  --border-default:    var(--neutral-200);
+  --border-strong:     var(--neutral-300);
+  --border-emerald:    var(--lune-emerald);
+
+  --accent:            var(--lune-emerald);
+  --accent-hover:      #0E9173;
+  --accent-press:      #0B7C62;
+  --focus-ring:        rgba(16,163,127,0.35);
+}
+
+/* ============================================================
+   Dark theme — set data-theme="dark" on a wrapper or <html>
+   The Lune cover/cover-page use the ink canvas with white type
+   and emerald accents.
+   ============================================================ */
+[data-theme="dark"] {
+  --bg-canvas:         var(--lune-ink);
+  --bg-surface:        #110B1F;
+  --bg-raised:         #181023;
+  --bg-sunken:         #0B0716;
+  --bg-inverse:        var(--neutral-0);
+
+  --surface-card:      #14101F;
+  --surface-muted:     #1B1528;
+  --surface-emerald:   rgba(16,163,127,0.16);
+
+  --text-primary:      var(--neutral-0);
+  --text-secondary:    #B8B2C4;
+  --text-tertiary:     #7C7689;
+  --text-on-emerald:   var(--lune-ink);
+  --text-on-inverse:   var(--lune-teal);
+  --text-link:         var(--lune-mint);
+
+  --border-subtle:     rgba(255,255,255,0.08);
+  --border-default:    rgba(255,255,255,0.14);
+  --border-strong:     rgba(255,255,255,0.24);
+  --border-emerald:    var(--lune-emerald);
+
+  --accent:            var(--lune-emerald);
+  --accent-hover:      #2BB996;
+  --accent-press:      #46A893;
+  --focus-ring:        rgba(153,242,172,0.40);
+}
+
+/* ===== ds/tokens/typography.css ===== */
+/* ============================================================
+   Lune — Typography tokens
+   ------------------------------------------------------------
+   Type scale lifted directly from the Lune UI Library type spec.
+   Body family: Plus Jakarta Sans. Display: Cormorant Garamond
+   (Bold Italic — reserved for hero / editorial moments).
+   Every step is set at 150% line-height per the spec, except the
+   display face which runs tight at 100%.
+   ============================================================ */
+
+:root {
+  /* ---- Families ---- */
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Cormorant Garamond", ui-serif, Georgia,
+                  "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ---- Weights ---- */
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+  --weight-extra:   800;
+
+  /* ---- Type scale (px) — name : size / line-height ---- */
+  --text-h1-size: 36px;   --text-h1-lh: 1.5;
+  --text-h2-size: 32px;   --text-h2-lh: 1.5;
+  --text-h3-size: 28px;   --text-h3-lh: 1.5;
+  --text-h4-size: 24px;   --text-h4-lh: 1.5;
+  --text-h5-size: 20px;   --text-h5-lh: 1.5;
+  --text-title1-size: 18px; --text-title1-lh: 1.5;
+  --text-title2-size: 16px; --text-title2-lh: 1.5;
+  --text-body-size: 14px; --text-body-lh: 1.5;
+  --text-caption-size: 12px; --text-caption-lh: 1.5;
+
+  /* Display (Cormorant Garamond, Bold Italic, tight) */
+  --text-display-size: 88px; --text-display-lh: 1.0;
+
+  /* ---- Letter-spacing ---- */
+  --tracking-tight: -0.02em;   /* large sans headings + hero */
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;     /* uppercase pill / eyebrow labels */
+}
+
+/* ============================================================
+   Type helper classes — apply directly or use as reference.
+   ============================================================ */
+.lune-display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-style: italic;
+  font-size: var(--text-display-size);
+  line-height: var(--text-display-lh);
+  letter-spacing: var(--tracking-tight);
+}
+.lune-h1 { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-h1-size); line-height: var(--text-h1-lh); letter-spacing: var(--tracking-tight); }
+.lune-h2 { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-h2-size); line-height: var(--text-h2-lh); letter-spacing: var(--tracking-tight); }
+.lune-h3 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h3-size); line-height: var(--text-h3-lh); }
+.lune-h4 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h4-size); line-height: var(--text-h4-lh); }
+.lune-h5 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-h5-size); line-height: var(--text-h5-lh); }
+.lune-title1 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-title1-size); line-height: var(--text-title1-lh); }
+.lune-title2 { font-family: var(--font-sans); font-weight: var(--weight-semibold);
+  font-size: var(--text-title2-size); line-height: var(--text-title2-lh); }
+.lune-body { font-family: var(--font-sans); font-weight: var(--weight-regular);
+  font-size: var(--text-body-size); line-height: var(--text-body-lh); }
+.lune-caption { font-family: var(--font-sans); font-weight: var(--weight-regular);
+  font-size: var(--text-caption-size); line-height: var(--text-caption-lh); }
+.lune-eyebrow { font-family: var(--font-sans); font-weight: var(--weight-bold);
+  font-size: var(--text-caption-size); line-height: 1; letter-spacing: var(--tracking-wide);
+  text-transform: uppercase; }
+
+/* ===== ds/tokens/spacing.css ===== */
+/* ============================================================
+   Lune — Spacing, radius, elevation & motion tokens
+   ------------------------------------------------------------
+   Spacing is a 4px base scale (Figma gaps observed: 8/20/24/32/48/64).
+   Radii run from tight inputs up to the fully-rounded status pills
+   (the Figma pills use a 72px radius = effectively pill-shaped).
+   ============================================================ */
+
+:root {
+  /* ---- Spacing (4px base) ---- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ---- Radii ---- */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;   /* default control / card radius */
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
+  --radius-pill: 999px;  /* status pills, chips, avatars */
+
+  /* ---- Border widths ---- */
+  --border-hairline: 1px;
+  --border-thick:    1.5px;
+
+  /* ---- Elevation — soft, cool-toned shadows (teal-tinted) ---- */
+  --shadow-xs:  0 1px 2px rgba(7,3,18,0.06);
+  --shadow-sm:  0 1px 3px rgba(7,3,18,0.08), 0 1px 2px rgba(7,3,18,0.04);
+  --shadow-md:  0 4px 12px rgba(7,3,18,0.08), 0 2px 4px rgba(7,3,18,0.04);
+  --shadow-lg:  0 12px 32px rgba(7,3,18,0.12), 0 4px 8px rgba(7,3,18,0.05);
+  --shadow-xl:  0 24px 64px rgba(7,3,18,0.16);
+  --shadow-emerald: 0 8px 24px rgba(16,163,127,0.28);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */
+  --ease-emphasis: cubic-bezier(0.3, 0.7, 0, 1); /* @kind other */
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1);   /* @kind other */
+  --dur-fast:   120ms;  /* @kind other */
+  --dur-base:   200ms;  /* @kind other */
+  --dur-slow:   320ms;  /* @kind other */
+
+  /* ---- Layout ---- */
+  --container-max: 1200px;
+  --container-prose: 680px;
+}
+
+/* ===== styles.css ===== */
+/* ============================================================
+   Lune Pulse — Bank Journey
+   Re-skinned onto the official Lune design system.
+   App-layer variables map onto Lune tokens; the Tweaks layer
+   overrides the --brand* group for palette exploration.
+   ============================================================ */
+
+
+:root {
+  /* brand — overridden by tweaks; defaults = true Lune emerald */
+  --brand:        var(--lune-emerald);   /* #10A37F */
+  --brand-strong: var(--accent-hover);   /* #0E9173 */
+  --brand-deep:   var(--lune-teal);      /* #002E2A */
+  --brand-soft:   var(--primary-10);
+  --brand-tint:   var(--neutral-25);
+  --accent2:      var(--lune-sea);
+
+  /* neutrals → Lune neutral ramp */
+  --canvas:    var(--neutral-25);
+  --surface:   var(--neutral-0);
+  --surface-2: #FAFCFB;
+  --line:      var(--neutral-100);
+  --line-soft: var(--neutral-50);
+  --ink:       var(--lune-teal);     /* deep-teal primary text */
+  --ink-2:     var(--neutral-600);
+  --ink-3:     var(--neutral-400);
+
+  /* semantic (Lune status set) */
+  --pos:    #0B7C62;            --pos-bg: var(--primary-10);
+  --warn:   var(--status-warning-ink); --warn-bg: #FCEFC6;
+  --neg:    var(--status-error-ink);   --neg-bg: #FBE0E4;
+  --info:   var(--status-info-ink);    --info-bg: #E3EEF2;
+
+  /* status pills — solid Lune chips */
+  --st-pending: #FBDA7D;  --st-pending-ink: #5A4205;
+  --st-live:    var(--lune-emerald); --st-live-ink: #FFFFFF;
+  --st-accepted:#5A9CB5;  --st-accepted-ink: #FFFFFF;
+  --st-done:    #99F2AC;  --st-done-ink: #063D1B;
+  --st-rej:     #F26076;  --st-rej-ink: #FFFFFF;
+
+  /* type */
+  --font-ui:      var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono:    var(--font-mono);
+
+  /* shape + rhythm (density-driven) */
+  --radius:    var(--radius-md);   /* 12 — app default control/card radius */
+  --radius-xl2: var(--radius-xl);  /* 24 */
+  --u:         8px;
+  --row-h:     56px;
+  --fs-base:   14px;
+
+  --shadow-pop: var(--shadow-emerald);
+}
+
+/* density variants */
+:root[data-density="compact"] { --u: 6px;  --row-h: 46px; --fs-base: 13px; }
+:root[data-density="regular"] { --u: 8px;  --row-h: 56px; --fs-base: 14px; }
+:root[data-density="comfy"]   { --u: 11px; --row-h: 66px; --fs-base: 15px; }
+
+/* radius variants */
+:root[data-corners="sharp"] { --radius: 6px;  --radius-sm: 4px;  --radius-lg: 10px;  --radius-xl2: 14px; }
+:root[data-corners="soft"]  { --radius: 12px; --radius-sm: 8px;  --radius-lg: 16px;  --radius-xl2: 24px; }
+:root[data-corners="round"] { --radius: 18px; --radius-sm: 13px; --radius-lg: 24px;  --radius-xl2: 30px; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+#root { height: 100%; }
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea { font-family: inherit; }
+.tnum { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.display { font-family: var(--font-display); font-style: italic; font-weight: 700; letter-spacing: -.02em; }
+::selection { background: var(--brand-soft); }
+
+/* ---------- App frame ---------- */
+.app { display: grid; grid-template-columns: 256px 1fr; height: 100%; overflow: hidden; }
+:root[data-density="compact"] .app { grid-template-columns: 232px 1fr; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  padding: calc(var(--u)*3) calc(var(--u)*2);
+  gap: 2px; overflow-y: auto;
+}
+.brand-mark { display: flex; align-items: center; gap: 11px; padding: 4px calc(var(--u)*1); margin-bottom: calc(var(--u)*3); }
+.brand-logo {
+  width: 40px; height: 40px; border-radius: var(--radius); flex: none;
+  background: var(--lune-teal); display: grid; place-items: center;
+  box-shadow: var(--shadow-xs);
+}
+.brand-logo img { width: 26px; height: 26px; display: block; }
+.brand-name { font-weight: 700; font-size: 17px; letter-spacing: -.02em; color: var(--ink); line-height: 1.1; white-space: nowrap; }
+.brand-sub { font-size: 11px; color: var(--ink-3); letter-spacing: .01em; margin-top: 3px; white-space: nowrap; }
+
+.nav-label {
+  font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide);
+  text-transform: uppercase; color: var(--ink-3);
+  padding: 0 calc(var(--u)*1.25); margin: calc(var(--u)*2.5) 0 calc(var(--u)*0.75);
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px calc(var(--u)*1.25); border-radius: var(--radius);
+  color: var(--ink-2); font-size: 14px; font-weight: 500;
+  width: 100%; text-align: left; position: relative;
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.nav-item svg { width: 19px; height: 19px; flex: none; opacity: .75; }
+.nav-item:hover { background: var(--brand-tint); color: var(--ink); }
+.nav-item.active { background: var(--brand-soft); color: var(--brand-strong); font-weight: 600; }
+.nav-item.active svg { opacity: 1; color: var(--brand); }
+.nav-item .nav-badge {
+  margin-left: auto; font-size: 11px; font-weight: 700;
+  background: var(--brand); color: #fff; border-radius: var(--radius-pill);
+  min-width: 20px; height: 20px; display: grid; place-items: center; padding: 0 6px;
+}
+.nav-child { padding-left: calc(var(--u)*4); font-size: 13.5px; }
+.nav-prod {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px calc(var(--u)*1.25); border-radius: var(--radius);
+  font-size: 14px; font-weight: 600; width: 100%; text-align: left;
+}
+.nav-prod .prod-mark { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; }
+.nav-prod .prod-mark img { width: 20px; height: 20px; }
+
+.sidebar-foot { margin-top: auto; padding-top: calc(var(--u)*2.5); }
+.user-chip { display: flex; align-items: center; gap: 11px; padding: 9px; border-radius: var(--radius); border: 1px solid var(--line); }
+.user-av {
+  width: 34px; height: 34px; border-radius: 10px; flex: none;
+  background: var(--lune-teal); color: var(--lune-mint);
+  display: grid; place-items: center; font-weight: 700; font-size: 13px;
+}
+.user-meta { line-height: 1.3; min-width: 0; }
+.user-meta b { font-size: 13px; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.user-meta small { font-size: 11px; color: var(--ink-3); }
+
+/* ---------- Main ---------- */
+.main { overflow-y: auto; height: 100%; position: relative; }
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--canvas) 88%, transparent);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 14px;
+  padding: calc(var(--u)*2) calc(var(--u)*4);
+}
+.crumbs { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-3); white-space: nowrap; }
+.crumbs b { color: var(--ink); font-weight: 600; }
+.crumbs .sep { opacity: .5; display: inline-flex; }
+.crumb-link { font-size: 13px; color: var(--ink-3); font-weight: 500; padding: 2px 4px; border-radius: var(--radius-sm); transition: color var(--dur-fast) var(--ease-standard), background var(--dur-fast) var(--ease-standard); }
+.crumb-link:hover { color: var(--brand-strong); background: var(--brand-tint); }
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+/* notifications */
+.notif-wrap { position: relative; }
+.notif-dot { position: absolute; top: 7px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--st-rej); border: 2px solid var(--surface); }
+.notif-pop {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: 40;
+  width: 340px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); overflow: hidden;
+  animation: pop var(--dur-base) var(--ease-emphasis);
+}
+.notif-head { padding: 14px 16px; font-size: 13px; font-weight: 700; letter-spacing: .01em; color: var(--ink); border-bottom: 1px solid var(--line-soft); }
+.notif-empty { padding: 24px 16px; text-align: center; font-size: 13px; color: var(--ink-3); }
+.notif-list { max-height: 360px; overflow-y: auto; }
+.notif-item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); transition: background var(--dur-fast) var(--ease-standard); }
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--brand-tint); }
+.notif-item > svg { color: var(--ink-3); flex: none; }
+.notif-ic { width: 32px; height: 32px; border-radius: var(--radius-sm); flex: none; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand-strong); }
+.notif-body { flex: 1; min-width: 0; line-height: 1.35; }
+.notif-body b { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.notif-body small { font-size: 11.5px; color: var(--ink-3); }
+.icon-btn {
+  width: 38px; height: 38px; border-radius: var(--radius); flex: none;
+  border: 1px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; color: var(--ink-2);
+  transition: background var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.icon-btn:hover { background: var(--brand-tint); border-color: var(--brand-soft); color: var(--brand-strong); }
+.icon-btn svg { width: 19px; height: 19px; }
+
+.page { padding: calc(var(--u)*4) calc(var(--u)*4) calc(var(--u)*9); max-width: 1280px; }
+
+/* ---------- Page header ---------- */
+.page-head { margin-bottom: calc(var(--u)*3); }
+.page-title { font-size: var(--text-h2-size); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; color: var(--ink); }
+.page-desc { color: var(--ink-2); font-size: 15px; margin-top: 8px; max-width: 660px; line-height: 1.5; }
+
+/* ---------- KPI strip ---------- */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: calc(var(--u)*2); margin-bottom: calc(var(--u)*3); }
+.kpi {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: calc(var(--u)*2.25);
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.kpi::before {
+  content: ''; position: absolute; left: 0; top: calc(var(--u)*2.25); bottom: calc(var(--u)*2.25);
+  width: 3px; border-radius: 3px; background: var(--kpi-accent, var(--brand));
+}
+.kpi-label { font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.kpi-value { font-size: 38px; font-weight: 700; letter-spacing: -.03em; margin-top: 8px; line-height: 1; }
+.kpi-foot { font-size: 12.5px; color: var(--ink-2); margin-top: 10px; display: flex; align-items: center; gap: 7px; }
+.kpi-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--kpi-accent, var(--brand)); flex: none; }
+
+/* ---------- List card ---------- */
+.list-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl2); box-shadow: var(--shadow-sm); overflow: hidden; }
+.toolbar { display: flex; align-items: center; gap: 14px; padding: calc(var(--u)*1.75) calc(var(--u)*2.25); border-bottom: 1px solid var(--line-soft); }
+.tabs { display: flex; gap: 3px; background: var(--brand-tint); padding: 4px; border-radius: var(--radius); }
+.tab {
+  padding: 8px 15px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 600; color: var(--ink-2);
+  display: flex; align-items: center; gap: 8px; transition: all var(--dur-fast) var(--ease-standard); white-space: nowrap;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { background: var(--surface); color: var(--brand-strong); box-shadow: var(--shadow-xs); }
+.tab .cnt { font-size: 11px; font-weight: 700; background: var(--neutral-100); color: var(--ink-2); border-radius: var(--radius-pill); padding: 1px 7px; }
+.tab.active .cnt { background: var(--brand-soft); color: var(--brand-strong); }
+
+.search { margin-left: auto; position: relative; display: flex; align-items: center; }
+.search svg { position: absolute; left: 13px; width: 16px; height: 16px; color: var(--ink-3); pointer-events: none; }
+.search input {
+  width: 280px; padding: 10px 12px 10px 38px; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--surface-2); font-size: 13.5px; color: var(--ink);
+  transition: border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), width var(--dur-base) var(--ease-standard);
+}
+.search input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--focus-ring); background: var(--surface); width: 320px; }
+.search input::placeholder { color: var(--ink-3); }
+
+/* ---------- Table ---------- */
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl thead th {
+  text-align: left; font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide);
+  text-transform: uppercase; color: var(--ink-3);
+  padding: calc(var(--u)*1.5) calc(var(--u)*2.25); border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap; background: var(--surface-2);
+}
+.tbl thead th.num, .tbl tbody td.num { text-align: right; }
+.tbl tbody td { padding: 0 calc(var(--u)*2.25); border-bottom: 1px solid var(--line-soft); height: var(--row-h); font-size: 14px; vertical-align: middle; }
+.tbl tbody tr { cursor: pointer; transition: background var(--dur-fast) var(--ease-standard); }
+.tbl tbody tr:hover { background: var(--brand-tint); }
+.tbl tbody tr:last-child td { border-bottom: none; }
+
+.merch-cell { display: flex; align-items: center; gap: 13px; }
+.merch-logo {
+  width: 38px; height: 38px; border-radius: var(--radius-sm); flex: none;
+  display: grid; place-items: center; font-weight: 700; font-size: 13.5px; color: #fff; letter-spacing: -.02em;
+}
+.merch-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.merch-camp { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+
+.cat-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; color: var(--ink-2);
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 4px 11px 4px 9px; white-space: nowrap;
+}
+.cat-ic { width: 14px; height: 14px; flex: none; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat; }
+
+.cashback-val { font-weight: 700; color: var(--brand-strong); }
+
+/* status pills — solid Lune chips, uppercase tracked */
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase;
+  border-radius: var(--radius-pill); padding: 5px 12px 5px 10px; white-space: nowrap;
+}
+.pill .pdot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: currentColor; }
+.pill.pending  { color: var(--st-pending-ink); background: var(--st-pending); }
+.pill.live     { color: var(--st-live-ink); background: var(--st-live); }
+.pill.live .pdot { background: #fff; animation: livepulse 1.8s var(--ease-standard) infinite; }
+.pill.accepted { color: var(--st-accepted-ink); background: var(--st-accepted); }
+.pill.completed{ color: var(--st-done-ink); background: var(--st-done); }
+.pill.rejected { color: var(--st-rej-ink); background: var(--st-rej); }
+@keyframes livepulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 50%{ box-shadow: 0 0 0 4px rgba(255,255,255,0); } }
+
+/* ---------- Pagination ---------- */
+.pager { display: flex; align-items: center; gap: 14px; padding: calc(var(--u)*1.75) calc(var(--u)*2.25); }
+.pager-info { font-size: 13px; color: var(--ink-3); }
+.pager-info b { color: var(--ink-2); }
+.pager-ctl { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.pg-btn { min-width: 34px; height: 34px; border-radius: var(--radius-sm); border: 1px solid transparent; color: var(--ink-2); font-size: 13px; font-weight: 600; display: grid; place-items: center; padding: 0 8px; }
+.pg-btn:hover { background: var(--brand-tint); }
+.pg-btn.active { background: var(--brand); color: #fff; }
+.pg-btn:disabled { opacity: .35; cursor: default; }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: var(--radius);
+  transition: background var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform .05s, border-color var(--dur-fast) var(--ease-standard); white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 17px; height: 17px; }
+.btn-primary { background: var(--brand); color: #fff; box-shadow: var(--shadow-xs); }
+.btn-primary:hover { background: var(--brand-strong); box-shadow: var(--shadow-emerald); }
+.btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--brand-tint); border-color: var(--brand-soft); }
+.btn-danger { background: var(--surface); color: var(--st-rej); border: 1px solid color-mix(in srgb, var(--st-rej) 36%, var(--line)); }
+.btn-danger:hover { background: var(--neg-bg); border-color: var(--st-rej); }
+.btn-danger-solid { background: var(--st-rej); color: #fff; }
+.btn-danger-solid:hover { filter: brightness(.95); }
+.btn-lg { padding: 13px 24px; font-size: 15px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ============================================================
+   Detail view
+   ============================================================ */
+.detail-wrap { max-width: 1120px; }
+.back-link { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); margin-bottom: calc(var(--u)*2.5); padding: 6px 4px; border-radius: var(--radius-sm); white-space: nowrap; }
+.back-link:hover { color: var(--brand-strong); }
+.back-link svg { width: 16px; height: 16px; }
+
+.detail-head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: calc(var(--u)*3); }
+.detail-head .merch-logo { width: 58px; height: 58px; border-radius: var(--radius); font-size: 20px; }
+.dh-text { flex: 1; min-width: 0; }
+.dh-title { font-size: var(--text-h4-size); font-weight: 700; letter-spacing: -.02em; display: flex; align-items: center; gap: 13px; flex-wrap: wrap; color: var(--ink); }
+.dh-meta { display: flex; align-items: center; gap: 14px; color: var(--ink-2); font-size: 13.5px; margin-top: 9px; flex-wrap: wrap; }
+.dh-meta > span { white-space: nowrap; }
+.dh-meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.dh-meta .mono { white-space: nowrap; }
+.dh-actions { display: flex; gap: 10px; flex: none; }
+
+.subtabs { display: flex; gap: 28px; border-bottom: 1px solid var(--line); margin-bottom: calc(var(--u)*3.5); }
+.subtab { padding: 0 1px calc(var(--u)*1.75); font-size: 14px; font-weight: 600; color: var(--ink-3); position: relative; white-space: nowrap; }
+.subtab:hover { color: var(--ink); }
+.subtab.active { color: var(--brand-strong); }
+.subtab.active::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; background: var(--brand); border-radius: 2px; }
+
+.banner { display: flex; align-items: center; gap: 14px; padding: calc(var(--u)*2) calc(var(--u)*2.5); border-radius: var(--radius-lg); margin-bottom: calc(var(--u)*3); font-size: 14px; }
+.banner svg { width: 20px; height: 20px; flex: none; }
+.banner b { font-weight: 700; }
+.banner-live { background: var(--brand-soft); color: var(--brand-strong); border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent); }
+.banner-done { background: var(--surface-muted); color: var(--ink); border: 1px solid var(--line); }
+.banner-rej { background: var(--neg-bg); color: var(--neg); border: 1px solid color-mix(in srgb, var(--st-rej) 26%, transparent); }
+.banner .audit { margin-left: auto; font-size: 12.5px; opacity: .85; text-align: right; line-height: 1.45; }
+
+.section-label { font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--ink-3); margin-bottom: calc(var(--u)*1.5); white-space: nowrap; }
+.block { margin-bottom: calc(var(--u)*4); }
+
+.summary-card {
+  background: linear-gradient(140deg, var(--brand-soft), var(--surface) 70%);
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent); border-radius: var(--radius-xl2);
+  padding: calc(var(--u)*3.25); font-size: 19px; line-height: 1.55; color: var(--ink); letter-spacing: -.01em;
+}
+.summary-card b { color: var(--brand-strong); font-weight: 700; }
+
+.term-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--u)*2); }
+.term { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: calc(var(--u)*2.5); box-shadow: var(--shadow-sm); }
+.term-label { font-size: 12px; font-weight: 600; color: var(--ink-3); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.term-label svg { width: 16px; height: 16px; color: var(--brand); }
+.term-value { font-size: 28px; font-weight: 700; letter-spacing: -.025em; margin-top: 11px; color: var(--ink); }
+.term-value small { font-size: 15px; font-weight: 600; color: var(--ink-3); }
+.term-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 5px; }
+
+.aud-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: calc(var(--u)*2.75); box-shadow: var(--shadow-sm); }
+.aud-head { display: flex; align-items: center; gap: 16px; }
+.aud-num { font-size: 33px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); }
+.aud-num small { font-size: 14px; color: var(--ink-3); font-weight: 600; }
+.aud-bars { display: flex; gap: 4px; margin-left: auto; align-items: flex-end; height: 46px; }
+.aud-bars i { width: 9px; background: var(--brand-soft); border-radius: 3px; display: block; }
+.aud-bars i.on { background: var(--brand); }
+.cond-list { margin-top: calc(var(--u)*2.25); display: flex; flex-direction: column; gap: 10px; }
+.cond { display: flex; align-items: center; gap: 12px; font-size: 14px; padding: 13px 16px; border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--line-soft); color: var(--ink); }
+.cond svg { width: 17px; height: 17px; color: var(--brand); flex: none; }
+.cond .ro { margin-left: auto; font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+/* metrics strip */
+.metrics { display: grid; grid-template-columns: repeat(var(--mcols, 3), 1fr); gap: calc(var(--u)*2); }
+.metric { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: calc(var(--u)*2.5); box-shadow: var(--shadow-sm); position: relative; }
+.metric-label { font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.metric-value { font-size: 28px; font-weight: 700; letter-spacing: -.025em; margin-top: 10px; color: var(--ink); }
+.metric-value small { font-size: 15px; color: var(--ink-3); font-weight: 600; }
+.delta { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; margin-top: 10px; padding: 3px 10px; border-radius: var(--radius-pill); white-space: nowrap; }
+.delta.up { color: var(--pos); background: var(--pos-bg); }
+.delta.flat { color: var(--ink-2); background: var(--surface-muted); }
+.metric-track { height: 6px; border-radius: 4px; background: var(--line-soft); margin-top: 15px; overflow: hidden; }
+.metric-track i { display: block; height: 100%; border-radius: 4px; }
+
+/* ---------- Decision footer ---------- */
+.decision {
+  position: sticky; bottom: 0; margin: 0 calc(var(--u)*-4) calc(var(--u)*-9);
+  padding: calc(var(--u)*2.5) calc(var(--u)*4);
+  background: color-mix(in srgb, var(--surface) 93%, transparent);
+  backdrop-filter: blur(12px); border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 18px; box-shadow: 0 -8px 24px rgba(7,3,18,.05);
+}
+.decision-text .dl { font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--warn); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+.decision-text .dl svg { width: 15px; height: 15px; }
+.decision-text .ds { font-size: 13px; color: var(--ink-3); margin-top: 5px; }
+.decision-actions { margin-left: auto; display: flex; gap: 12px; }
+
+/* ============================================================
+   Modal / overlay
+   ============================================================ */
+.overlay { position: fixed; inset: 0; z-index: 100; background: rgba(7,3,18,.45); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px; animation: fade var(--dur-base) var(--ease-standard); }
+@keyframes fade { from { opacity: 0; } }
+
+.modal { background: var(--surface); border-radius: var(--radius-xl2); width: 528px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: pop var(--dur-slow) var(--ease-emphasis); }
+@keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+
+.overlay.sheet { justify-content: flex-end; padding: 0; }
+.overlay.sheet .modal { width: 484px; max-height: 100vh; height: 100vh; border-radius: 0; animation: slidein var(--dur-slow) var(--ease-emphasis); display: flex; flex-direction: column; }
+@keyframes slidein { from { transform: translateX(100%); } }
+.overlay.sheet .modal-body { flex: 1; }
+
+.modal-head { padding: calc(var(--u)*3.25) calc(var(--u)*3.25) 0; display: flex; align-items: flex-start; gap: 14px; }
+.modal-ico { width: 44px; height: 44px; border-radius: var(--radius); display: grid; place-items: center; flex: none; }
+.modal-ico svg { width: 22px; height: 22px; }
+.modal-ico.go { background: var(--brand-soft); color: var(--brand-strong); }
+.modal-ico.stop { background: var(--neg-bg); color: var(--st-rej); }
+.modal-title { font-size: 20px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+.modal-sub { color: var(--ink-2); font-size: 14px; margin-top: 7px; line-height: 1.5; }
+.modal-close { margin-left: auto; flex: none; width: 34px; height: 34px; border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--ink-3); }
+.modal-close:hover { background: var(--surface-muted); color: var(--ink); }
+.modal-body { padding: calc(var(--u)*2.5) calc(var(--u)*3.25); }
+.modal-foot { padding: calc(var(--u)*2) calc(var(--u)*3.25) calc(var(--u)*3.25); display: flex; gap: 12px; }
+.modal-foot .btn { flex: 1; }
+
+.recap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.recap-item { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 13px 15px; }
+.recap-item .rl { font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--ink-3); }
+.recap-item .rv { font-size: 17px; font-weight: 700; margin-top: 5px; letter-spacing: -.01em; color: var(--ink); }
+.recap-item.hl { background: var(--brand-soft); border-color: color-mix(in srgb, var(--brand) 20%, transparent); }
+.recap-item.hl .rv { color: var(--brand-strong); }
+
+.note { display: flex; gap: 11px; padding: 13px 15px; border-radius: var(--radius); font-size: 13px; line-height: 1.5; margin-top: calc(var(--u)*2.25); }
+.note svg { width: 17px; height: 17px; flex: none; margin-top: 1px; }
+.note.warn { background: var(--warn-bg); color: var(--warn); }
+.note.info { background: var(--info-bg); color: var(--info); }
+
+/* reject chips */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 9px; margin-top: calc(var(--u)*1.5); }
+.chip { padding: 8px 15px; border-radius: var(--radius-pill); border: 1.5px solid var(--line); font-size: 13.5px; font-weight: 600; color: var(--ink-2); background: var(--surface); transition: all var(--dur-fast) var(--ease-standard); display: inline-flex; align-items: center; gap: 7px; }
+.chip:hover { border-color: var(--ink-3); }
+.chip.on { background: var(--neg-bg); border-color: var(--st-rej); color: var(--neg); }
+.chip.on svg { width: 14px; height: 14px; }
+.field-label { font-size: 13px; font-weight: 600; color: var(--ink); margin: calc(var(--u)*2.5) 0 8px; display: flex; align-items: center; gap: 6px; }
+.field-label .opt { font-weight: 500; color: var(--ink-3); }
+textarea.field { width: 100%; min-height: 96px; resize: vertical; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius); font-size: 14px; color: var(--ink); background: var(--surface-2); line-height: 1.5; }
+textarea.field:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--focus-ring); background: var(--surface); }
+textarea.field::placeholder { color: var(--ink-3); }
+
+/* confirmation */
+.confirm-wrap { max-width: 560px; margin: calc(var(--u)*6) auto 0; text-align: center; }
+.confirm-ico { width: 80px; height: 80px; border-radius: var(--radius-xl2); display: grid; place-items: center; margin: 0 auto calc(var(--u)*3); }
+.confirm-ico.ok { background: var(--brand-soft); color: var(--brand-strong); }
+.confirm-ico.rej { background: var(--surface-muted); color: var(--ink-2); }
+.confirm-ico svg { width: 42px; height: 42px; }
+.confirm-title { font-size: 40px; line-height: 1.05; color: var(--ink); }
+.confirm-sub { color: var(--ink-2); font-size: 16px; margin-top: 14px; line-height: 1.55; }
+.confirm-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-xl2); box-shadow: var(--shadow-sm); padding: calc(var(--u)*2.75); margin: calc(var(--u)*4) 0; text-align: left; }
+.confirm-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line-soft); }
+.confirm-row:last-child { border-bottom: none; }
+.confirm-row .cl { font-size: 13.5px; color: var(--ink-3); }
+.confirm-row .cv { margin-left: auto; font-weight: 700; font-size: 14.5px; color: var(--ink); }
+.confirm-actions { display: flex; gap: 12px; justify-content: center; }
+
+/* cardholder preview */
+.phone-wrap { display: flex; justify-content: center; padding: calc(var(--u)*2) 0; }
+.phone { width: 322px; background: var(--lune-ink); border-radius: 44px; padding: 12px; box-shadow: var(--shadow-xl); position: relative; }
+.phone-screen { background: var(--canvas); border-radius: 34px; overflow: hidden; height: 588px; position: relative; }
+.phone-notch { position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 116px; height: 27px; background: var(--lune-ink); border-radius: 16px; z-index: 5; }
+.offer-hero { height: 222px; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; color: #fff; position: relative; }
+.offer-hero::after { content:''; position:absolute; inset:0; background: linear-gradient(transparent, rgba(7,3,18,.6)); }
+.offer-hero > * { position: relative; z-index: 2; }
+.offer-badge { align-self: flex-start; background: var(--lune-mint); color: var(--lune-teal); font-weight: 800; font-size: 12px; letter-spacing: var(--tracking-wide); text-transform: uppercase; padding: 5px 12px; border-radius: var(--radius-pill); }
+.offer-body { padding: 20px; }
+
+.empty-state { padding: calc(var(--u)*8) 0; text-align: center; color: var(--ink-3); }
+.empty-state svg { width: 44px; height: 44px; opacity: .4; margin-bottom: 14px; }
+
+  </style>
+<script>
+if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('pj-embedded');
+</script>
+<style>
+html.pj-embedded .sidebar { display: none; }
+html.pj-embedded .app { grid-template-columns: 1fr; }
+html.pj-embedded { --neutral-25: #FFFFFF; }
+.btn { border-radius: 999px; }
+/* —— campaign manager improvements —— */
+.cell-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.th-sort { cursor: pointer; user-select: none; }
+.th-sort:hover { color: var(--brand-strong); }
+.sort-ind { margin-left: 5px; font-size: 11px; opacity: .4; }
+.th-sorted { color: var(--brand-strong); }
+.th-sorted .sort-ind { opacity: 1; }
+.csv-btn { padding: 8px 14px; font-size: 13px; gap: 7px; flex: none; }
+.csv-btn[disabled] { opacity: .45; cursor: not-allowed; }
+.queue-nav { display: flex; align-items: center; gap: 8px; margin-left: auto; margin-right: 18px; }
+.queue-pos { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+.tbl tbody tr:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script>
+window.__resources = {
+  "ds/cat/dining.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2292%22%20height%3D%22100.065%22%20viewBox%3D%220%200%2092%20100.065%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%2092%204.065%20L%2092%2096.065%20C%2092%2097.126%2091.579%2098.143%2090.828%2098.893%20C%2090.078%2099.643%2089.061%20100.065%2088%20100.065%20C%2086.939%20100.065%2085.922%2099.643%2085.172%2098.893%20C%2084.421%2098.143%2084%2097.126%2084%2096.065%20L%2084%2072.065%20L%2060%2072.065%20C%2058.939%2072.065%2057.922%2071.643%2057.172%2070.893%20C%2056.421%2070.143%2056%2069.126%2056%2068.065%20C%2056.186%2058.483%2057.396%2048.949%2059.61%2039.625%20C%2064.5%2019.38%2073.77%205.81%2086.425%200.39%20C%2087.033%200.129%2087.697%200.024%2088.356%200.083%20C%2089.015%200.141%2089.649%200.363%2090.201%200.727%20C%2090.754%201.091%2091.207%201.587%2091.521%202.169%20C%2091.835%202.752%2092%203.403%2092%204.065%20Z%20M%2043.945%203.41%20C%2043.867%202.885%2043.685%202.38%2043.409%201.926%20C%2043.134%201.472%2042.771%201.077%2042.341%200.765%20C%2041.912%200.453%2041.425%200.229%2040.908%200.107%20C%2040.391%20-0.015%2039.855%20-0.033%2039.331%200.054%20C%2038.807%200.142%2038.306%200.332%2037.857%200.615%20C%2037.408%200.899%2037.019%201.268%2036.714%201.703%20C%2036.409%202.138%2036.194%202.629%2036.081%203.148%20C%2035.967%203.666%2035.959%204.203%2036.055%204.725%20L%2039.945%2028.065%20L%2028%2028.065%20L%2028%204.065%20C%2028%203.004%2027.579%201.987%2026.828%201.236%20C%2026.078%200.486%2025.061%200.065%2024%200.065%20C%2022.939%200.065%2021.922%200.486%2021.172%201.236%20C%2020.421%201.987%2020%203.004%2020%204.065%20L%2020%2028.065%20L%208.055%2028.065%20L%2011.945%204.725%20C%2012.041%204.203%2012.033%203.666%2011.919%203.148%20C%2011.806%202.629%2011.591%202.138%2011.286%201.703%20C%2010.981%201.268%2010.592%200.899%2010.143%200.615%20C%209.694%200.332%209.193%200.142%208.669%200.054%20C%208.145%20-0.033%207.609%20-0.015%207.092%200.107%20C%206.575%200.229%206.088%200.453%205.659%200.765%20C%205.229%201.077%204.866%201.472%204.591%201.926%20C%204.315%202.38%204.133%202.885%204.055%203.41%20L%200.055%2027.41%20C%200.019%2027.626%200.001%2027.845%200%2028.065%20C%200.008%2033.734%202.02%2039.218%205.679%2043.547%20C%209.339%2047.877%2014.411%2050.773%2020%2051.725%20L%2020%2096.065%20C%2020%2097.126%2020.421%2098.143%2021.172%2098.893%20C%2021.922%2099.643%2022.939%20100.065%2024%20100.065%20C%2025.061%20100.065%2026.078%2099.643%2026.828%2098.893%20C%2027.579%2098.143%2028%2097.126%2028%2096.065%20L%2028%2051.725%20C%2033.589%2050.773%2038.661%2047.877%2042.321%2043.547%20C%2045.98%2039.218%2047.992%2033.734%2048%2028.065%20C%2047.999%2027.845%2047.981%2027.626%2047.945%2027.41%20L%2043.945%203.41%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/grocery.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22111.999%22%20height%3D%2299.989%22%20viewBox%3D%220%200%20111.999%2099.989%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%20111%2033.354%20C%20110.626%2032.927%20110.165%2032.584%20109.647%2032.348%20C%20109.13%2032.113%20108.569%2031.991%20108%2031.989%20L%2085.815%2031.989%20L%2059%201.354%20C%2058.625%200.929%2058.163%200.588%2057.646%200.354%20C%2057.129%200.121%2056.568%200%2056%200%20C%2055.433%200%2054.872%200.121%2054.355%200.354%20C%2053.837%200.588%2053.376%200.929%2053%201.354%20L%2026.185%2031.989%20L%204%2031.989%20C%203.43%2031.989%202.867%2032.111%202.348%2032.347%20C%201.828%2032.582%201.366%2032.926%200.99%2033.355%20C%200.615%2033.784%200.335%2034.288%200.171%2034.834%20C%200.006%2035.38%20-0.04%2035.954%200.035%2036.519%20L%207.57%2093.049%20C%207.833%2094.968%208.78%2096.727%2010.238%2098.002%20C%2011.695%2099.277%2013.564%2099.983%2015.5%2099.989%20L%2096.5%2099.989%20C%2098.437%2099.983%20100.306%2099.277%20101.763%2098.002%20C%20103.22%2096.727%20104.167%2094.968%20104.43%2093.049%20L%20111.965%2036.519%20C%20112.04%2035.953%20111.992%2035.378%20111.825%2034.832%20C%20111.659%2034.286%20111.378%2033.782%20111%2033.354%20Z%20M%2032.8%2083.989%20C%2032.665%2083.997%2032.53%2083.997%2032.395%2083.989%20C%2031.4%2083.994%2030.439%2083.628%2029.699%2082.962%20C%2028.96%2082.297%2028.495%2081.379%2028.395%2080.389%20L%2025.595%2052.389%20C%2025.489%2051.334%2025.807%2050.279%2026.478%2049.458%20C%2027.15%2048.636%2028.12%2048.115%2029.175%2048.009%20C%2030.231%2047.903%2031.285%2048.221%2032.107%2048.892%20C%2032.928%2049.563%2033.449%2050.534%2033.555%2051.589%20L%2036.355%2079.589%20C%2036.467%2080.644%2036.156%2081.7%2035.489%2082.525%20C%2034.822%2083.351%2033.855%2083.877%2032.8%2083.989%20Z%20M%2060%2079.989%20C%2060%2081.05%2059.579%2082.068%2058.829%2082.818%20C%2058.079%2083.568%2057.061%2083.989%2056%2083.989%20C%2054.939%2083.989%2053.922%2083.568%2053.172%2082.818%20C%2052.422%2082.068%2052%2081.05%2052%2079.989%20L%2052%2051.989%20C%2052%2050.928%2052.422%2049.911%2053.172%2049.161%20C%2053.922%2048.411%2054.939%2047.989%2056%2047.989%20C%2057.061%2047.989%2058.079%2048.411%2058.829%2049.161%20C%2059.579%2049.911%2060%2050.928%2060%2051.989%20L%2060%2079.989%20Z%20M%2036.815%2031.989%20L%2056%2010.064%20L%2075.185%2031.989%20L%2036.815%2031.989%20Z%20M%2086.38%2052.389%20L%2083.58%2080.389%20C%2083.481%2081.375%2083.02%2082.289%2082.285%2082.954%20C%2081.551%2083.619%2080.596%2083.988%2079.605%2083.989%20C%2079.47%2083.997%2079.335%2083.997%2079.2%2083.989%20C%2078.678%2083.937%2078.17%2083.782%2077.708%2083.533%20C%2077.245%2083.285%2076.836%2082.947%2076.503%2082.541%20C%2076.171%2082.134%2075.922%2081.666%2075.77%2081.163%20C%2075.619%2080.66%2075.568%2080.132%2075.62%2079.609%20L%2078.42%2051.609%20C%2078.526%2050.554%2079.047%2049.583%2079.869%2048.912%20C%2080.69%2048.241%2081.745%2047.923%2082.8%2048.029%20C%2083.856%2048.135%2084.826%2048.656%2085.497%2049.478%20C%2086.169%2050.299%2086.486%2051.354%2086.38%2052.409%20L%2086.38%2052.389%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/shopping.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22116.001%22%20height%3D%22104%22%20viewBox%3D%220%200%20116.001%20104%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%20115.855%2025.07%20L%20103.035%2071.21%20C%20102.33%2073.73%20100.823%2075.952%2098.741%2077.539%20C%2096.659%2079.125%2094.117%2079.989%2091.5%2080%20L%2042.08%2080%20C%2039.455%2079.999%2036.903%2079.139%2034.812%2077.552%20C%2032.721%2075.965%2031.207%2073.738%2030.5%2071.21%20L%2012.96%208%20L%204%208%20C%202.939%208%201.922%207.579%201.172%206.828%20C%200.421%206.078%200%205.061%200%204%20C%200%202.939%200.421%201.922%201.172%201.172%20C%201.922%200.421%202.939%200%204%200%20L%2016%200%20C%2016.875%200%2017.725%200.286%2018.421%200.815%20C%2019.117%201.345%2019.621%202.087%2019.855%202.93%20L%2024.595%2020%20L%20112%2020%20C%20112.617%2020%20113.225%2020.142%20113.777%2020.416%20C%20114.33%2020.69%20114.812%2021.088%20115.185%2021.579%20C%20115.558%2022.07%20115.813%2022.64%20115.929%2023.246%20C%20116.045%2023.852%20116.02%2024.476%20115.855%2025.07%20Z%20M%2040%2088%20C%2038.418%2088%2036.871%2088.469%2035.555%2089.348%20C%2034.24%2090.227%2033.214%2091.477%2032.609%2092.939%20C%2032.003%2094.4%2031.845%2096.009%2032.154%2097.561%20C%2032.462%2099.113%2033.224%20100.538%2034.343%20101.657%20C%2035.462%20102.776%2036.887%20103.538%2038.439%20103.846%20C%2039.991%20104.155%2041.6%20103.997%2043.061%20103.391%20C%2044.523%20102.786%2045.773%20101.76%2046.652%20100.445%20C%2047.531%2099.129%2048%2097.582%2048%2096%20C%2048%2093.878%2047.157%2091.843%2045.657%2090.343%20C%2044.157%2088.843%2042.122%2088%2040%2088%20Z%20M%2092%2088%20C%2090.418%2088%2088.871%2088.469%2087.555%2089.348%20C%2086.24%2090.227%2085.214%2091.477%2084.609%2092.939%20C%2084.003%2094.4%2083.845%2096.009%2084.154%2097.561%20C%2084.462%2099.113%2085.224%20100.538%2086.343%20101.657%20C%2087.462%20102.776%2088.887%20103.538%2090.439%20103.846%20C%2091.991%20104.155%2093.6%20103.997%2095.061%20103.391%20C%2096.523%20102.786%2097.773%20101.76%2098.652%20100.445%20C%2099.531%2099.129%20100%2097.582%20100%2096%20C%20100%2093.878%2099.157%2091.843%2097.657%2090.343%20C%2096.157%2088.843%2094.122%2088%2092%2088%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/entertainment.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22100.006%22%20height%3D%2295.995%22%20viewBox%3D%220%200%20100.006%2095.995%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%2096.006%2039.995%20L%2039.051%2039.995%20L%2093.006%2025.75%20C%2093.516%2025.615%2093.995%2025.381%2094.415%2025.06%20C%2094.835%2024.74%2095.187%2024.339%2095.451%2023.882%20C%2095.715%2023.424%2095.886%2022.919%2095.953%2022.395%20C%2096.021%2021.871%2095.985%2021.339%2095.846%2020.83%20L%2091.766%205.83%20C%2091.204%203.812%2089.87%202.096%2088.053%201.055%20C%2086.235%200.013%2084.081%20-0.271%2082.056%200.265%20L%205.911%2020.365%20C%204.897%2020.628%203.946%2021.091%203.113%2021.726%20C%202.28%2022.361%201.582%2023.156%201.061%2024.065%20C%200.536%2024.962%200.197%2025.955%200.064%2026.986%20C%20-0.069%2028.017%200.006%2029.064%200.286%2030.065%20L%204.006%2043.775%20C%204.006%2043.845%204.006%2043.92%204.006%2043.995%20L%204.006%2087.995%20C%204.006%2090.117%204.848%2092.151%206.349%2093.652%20C%207.849%2095.152%209.884%2095.995%2012.006%2095.995%20L%2092.006%2095.995%20C%2094.127%2095.995%2096.162%2095.152%2097.662%2093.652%20C%2099.163%2092.151%20100.006%2090.117%20100.006%2087.995%20L%20100.006%2043.995%20C%20100.006%2042.934%2099.584%2041.916%2098.834%2041.166%20C%2098.084%2040.416%2097.066%2039.995%2096.006%2039.995%20Z%20M%2084.086%207.995%20L%2087.086%2019.03%20L%2070.291%2023.495%20L%2056.226%2015.355%20L%2084.086%207.995%20Z%20M%2026.781%2023.13%20L%2040.841%2031.25%20L%2011.041%2039.115%20L%208.041%2028.075%20L%2026.781%2023.13%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/wellness.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22112%22%20height%3D%2295.977%22%20viewBox%3D%220%200%20112%2095.977%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%20112%2031%20C%20112%2066%2060.105%2094.33%2057.895%2095.5%20C%2057.313%2095.813%2056.661%2095.977%2056%2095.977%20C%2055.339%2095.977%2054.687%2095.813%2054.105%2095.5%20C%2052.43%2094.6%2022.33%2078.155%207.765%2055.055%20C%207.577%2054.752%207.473%2054.405%207.465%2054.049%20C%207.456%2053.693%207.542%2053.341%207.715%2053.03%20C%207.888%2052.718%208.141%2052.459%208.448%2052.278%20C%208.754%2052.097%209.104%2052.001%209.46%2052%20L%2028%2052%20C%2028.659%2052%2029.307%2051.838%2029.888%2051.528%20C%2030.469%2051.217%2030.964%2050.768%2031.33%2050.22%20L%2036%2043.22%20L%2048.67%2062.22%20C%2049.155%2062.948%2049.866%2063.497%2050.694%2063.782%20C%2051.521%2064.068%2052.419%2064.074%2053.25%2063.8%20C%2054.131%2063.503%2054.884%2062.913%2055.385%2062.13%20L%2062.14%2052%20L%2072%2052%20C%2072.548%2052.001%2073.091%2051.89%2073.595%2051.672%20C%2074.098%2051.455%2074.551%2051.136%2074.926%2050.736%20C%2075.302%2050.336%2075.59%2049.864%2075.775%2049.347%20C%2075.96%2048.831%2076.036%2048.282%2076%2047.735%20C%2075.91%2046.707%2075.436%2045.751%2074.671%2045.058%20C%2073.906%2044.365%2072.907%2043.987%2071.875%2044%20L%2060%2044%20C%2059.341%2044%2058.693%2044.162%2058.112%2044.472%20C%2057.531%2044.783%2057.036%2045.232%2056.67%2045.78%20L%2052%2052.78%20L%2039.33%2033.78%20C%2038.845%2033.052%2038.134%2032.503%2037.306%2032.218%20C%2036.479%2031.932%2035.581%2031.926%2034.75%2032.2%20C%2033.869%2032.497%2033.116%2033.087%2032.615%2033.87%20L%2025.86%2044%20L%203.765%2044%20C%203.338%2044.001%202.921%2043.865%202.576%2043.613%20C%202.232%2043.36%201.977%2043.003%201.85%2042.595%20C%200.644%2038.847%200.02%2034.937%200%2031%20C%200.009%2022.781%203.278%2014.902%209.09%209.09%20C%2014.902%203.278%2022.781%200.009%2031%200%20C%2041.325%200%2050.365%204.44%2056%2011.945%20C%2061.635%204.44%2070.675%200%2081%200%20C%2089.219%200.009%2097.098%203.278%20102.91%209.09%20C%20108.722%2014.902%20111.991%2022.781%20112%2031%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/travel.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22119.974%22%20height%3D%2288.001%22%20viewBox%3D%220%200%20119.974%2088.001%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%2083.991%2084.001%20C%2083.991%2085.062%2083.57%2086.079%2082.82%2086.829%20C%2082.069%2087.58%2081.052%2088.001%2079.991%2088.001%20L%207.991%2088.001%20C%206.93%2088.001%205.913%2087.58%205.163%2086.829%20C%204.413%2086.079%203.991%2085.062%203.991%2084.001%20C%203.991%2082.94%204.413%2081.923%205.163%2081.173%20C%205.913%2080.422%206.93%2080.001%207.991%2080.001%20L%2079.991%2080.001%20C%2081.052%2080.001%2082.069%2080.422%2082.82%2081.173%20C%2083.57%2081.923%2083.991%2082.94%2083.991%2084.001%20Z%20M%20119.146%2019.381%20L%20109.826%207.436%20L%20109.766%207.361%20C%20106.752%203.649%20102.503%201.145%2097.795%200.308%20C%2093.087%20-0.53%2088.235%200.355%2084.126%202.801%20L%2058.341%2018.191%20L%2031.371%208.271%20C%2030.47%207.935%2029.477%207.935%2028.576%208.271%20L%2024.991%209.636%20L%2024.831%209.701%20C%2023.605%2010.227%2022.529%2011.052%2021.703%2012.101%20C%2020.877%2013.149%2020.327%2014.387%2020.101%2015.703%20C%2019.876%2017.018%2019.984%2018.369%2020.414%2019.633%20C%2020.845%2020.896%2021.585%2022.032%2022.566%2022.936%20L%2033.491%2033.531%20L%2023.406%2039.631%20L%209.276%2034.861%20C%208.276%2034.524%207.183%2034.596%206.236%2035.061%20L%204.736%2035.796%20C%203.536%2036.332%202.487%2037.156%201.681%2038.194%20C%200.875%2039.233%200.337%2040.454%200.115%2041.749%20C%20-0.107%2043.045%20-0.006%2044.375%200.408%2045.622%20C%200.823%2046.87%201.538%2047.996%202.491%2048.901%20L%2020.491%2066.536%20L%2020.551%2066.596%20C%2024.238%2070.081%2029.118%2072.025%2034.191%2072.031%20C%2037.753%2072.025%2041.249%2071.073%2044.321%2069.271%20L%20118.026%2025.271%20C%20118.512%2024.98%20118.932%2024.59%20119.256%2024.125%20C%20119.58%2023.66%20119.801%2023.132%20119.906%2022.575%20C%20120.01%2022.018%20119.995%2021.445%20119.862%2020.895%20C%20119.728%2020.344%20119.479%2019.828%20119.131%2019.381%20L%20119.146%2019.381%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/cat/household.svg": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22120%22%20height%3D%22100.001%22%20viewBox%3D%220%200%20120%20100.001%22%20fill%3D%22none%22%3E%0A%20%20%3Cpath%20d%3D%22M%20116%2092.001%20L%20108%2092.001%20L%20108%2056.001%20L%20109.17%2057.171%20C%20109.922%2057.922%20110.941%2058.343%20112.004%2058.342%20C%20113.066%2058.341%20114.084%2057.918%20114.835%2057.166%20C%20115.586%2056.414%20116.007%2055.395%20116.006%2054.333%20C%20116.005%2053.27%20115.582%2052.252%20114.83%2051.501%20L%2065.655%202.341%20C%2064.155%200.842%2062.121%200%2060%200%20C%2057.879%200%2055.845%200.842%2054.345%202.341%20L%205.17%2051.501%20C%204.42%2052.252%203.999%2053.27%204%2054.331%20C%204%2055.392%204.422%2056.409%205.172%2057.159%20C%205.923%2057.909%206.941%2058.33%208.002%2058.329%20C%209.063%2058.329%2010.08%2057.907%2010.83%2057.156%20L%2012%2056.001%20L%2012%2092.001%20L%204%2092.001%20C%202.939%2092.001%201.922%2092.423%201.172%2093.173%20C%200.421%2093.923%200%2094.94%200%2096.001%20C%200%2097.062%200.421%2098.08%201.172%2098.83%20C%201.922%2099.58%202.939%20100.001%204%20100.001%20L%20116%20100.001%20C%20117.061%20100.001%20118.078%2099.58%20118.828%2098.83%20C%20119.579%2098.08%20120%2097.062%20120%2096.001%20C%20120%2094.94%20119.579%2093.923%20118.828%2093.173%20C%20118.078%2092.423%20117.061%2092.001%20116%2092.001%20Z%20M%2072%2092.001%20L%2048%2092.001%20L%2048%2068.001%20C%2048%2067.471%2048.211%2066.962%2048.586%2066.587%20C%2048.961%2066.212%2049.47%2066.001%2050%2066.001%20L%2070%2066.001%20C%2070.53%2066.001%2071.039%2066.212%2071.414%2066.587%20C%2071.789%2066.962%2072%2067.471%2072%2068.001%20L%2072%2092.001%20Z%22%20fill%3D%22currentColor%22%20fill-rule%3D%22nonzero%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/brand/lune-icon-dark.svg": "data:image/svg+xml;utf8,%3Csvg%20width%3D%22280%22%20height%3D%22280%22%20viewBox%3D%220%200%20280%20280%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%0A%3Ccircle%20cx%3D%22140%22%20cy%3D%22140%22%20r%3D%22100%22%20fill%3D%22white%22%3E%3C/circle%3E%0A%3Cpath%20d%3D%22M203.435%2062.7734C206.04%2064.9098%20208.559%2067.1894%20210.991%2069.6123C212.423%2071.0439%20213.802%2072.5094%20215.129%2074.0039C230.61%2091.6137%20240%20114.71%20240%20140C240%20195.228%20195.228%20240%20140%20240C112.908%20240%2088.3322%20229.225%2070.3232%20211.729C70.0798%20211.49%2069.8363%20211.25%2069.5947%20211.009L69.5703%20210.984C67.1444%20208.552%2064.8652%20206.032%2062.7324%20203.427C105.511%20238.345%20168.491%20231.965%20203.405%20189.183C217.966%20171.339%20225.92%20149.015%20225.926%20125.983C225.931%20102.952%20217.986%2080.6242%20203.435%2062.7734Z%22%20fill%3D%22%2300B68A%22%3E%3C/path%3E%0A%3C/svg%3E",
+  "ds/brand/lune-icon-light.svg": "data:image/svg+xml;utf8,%3Csvg%20width%3D%22280%22%20height%3D%22280%22%20viewBox%3D%220%200%20280%20280%22%20fill%3D%22none%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%0A%3Ccircle%20cx%3D%22140%22%20cy%3D%22140%22%20r%3D%22100%22%20fill%3D%22%23002E2A%22%3E%3C/circle%3E%0A%3Cpath%20d%3D%22M203.435%2062.7734C206.04%2064.9098%20208.559%2067.1894%20210.991%2069.6123C212.423%2071.0439%20213.802%2072.5094%20215.129%2074.0039C230.61%2091.6137%20240%20114.71%20240%20140C240%20195.228%20195.228%20240%20140%20240C112.908%20240%2088.3322%20229.225%2070.3232%20211.729C70.0798%20211.49%2069.8363%20211.25%2069.5947%20211.009L69.5703%20210.984C67.1444%20208.552%2064.8652%20206.032%2062.7324%20203.427C105.511%20238.345%20168.491%20231.965%20203.405%20189.183C217.966%20171.339%20225.92%20149.015%20225.926%20125.983C225.931%20102.952%20217.986%2080.6242%20203.435%2062.7734Z%22%20fill%3D%22%2310A37F%22%3E%3C/path%3E%0A%3C/svg%3E",
+};
+  </script>
+
+  <script>
+/* ============================================================
+   Lune Pulse — campaign dataset (bank-facing)
+   GCC merchants, AED, Ramadan/Q2 2026 window.
+   Exports window.PULSE: { campaigns, categories, byStatus, find }
+   ============================================================ */
+(function () {
+  const CAT = {
+    food:    { label: 'Dining',      color: '#FF7444', icon: 'ds/cat/dining.svg' },
+    grocery: { label: 'Grocery',     color: '#E76F2E', icon: 'ds/cat/grocery.svg' },
+    fashion: { label: 'Shopping',    color: '#F26076', icon: 'ds/cat/shopping.svg' },
+    elec:    { label: 'Electronics', color: '#3852B4', icon: 'ds/cat/entertainment.svg' },
+    beauty:  { label: 'Wellness',    color: '#F49BAB', icon: 'ds/cat/wellness.svg' },
+    travel:  { label: 'Travel',      color: '#6F8F72', icon: 'ds/cat/travel.svg' },
+    home:    { label: 'Household',   color: '#C4A484', icon: 'ds/cat/household.svg' },
+  };
+
+  // deterministic merchant brand colors for the monogram tile
+  function brandFill(seed) {
+    const palette = [
+      ['#002E2A', '#0A634D'], ['#10A37F', '#0B7C62'], ['#0A634D', '#002E2A'],
+      ['#469A93', '#2E6E68'], ['#1B2421', '#2E3A36'], ['#0E9173', '#469A93'],
+      ['#2E3A36', '#0A634D'], ['#0B7C62', '#10A37F'], ['#44524E', '#1B2421'],
+    ];
+    const p = palette[seed % palette.length];
+    return `linear-gradient(145deg, ${p[0]}, ${p[1]})`;
+  }
+  function initials(name) {
+    const w = name.replace(/[^A-Za-z0-9 ]/g, '').split(' ').filter(Boolean);
+    return (w[0]?.[0] || 'L') + (w[1]?.[0] || w[0]?.[1] || '');
+  }
+
+  let _id = 0;
+  function mk(o) {
+    const id = 'cmp-' + (++_id);
+    return Object.assign({
+      id,
+      cat: 'food',
+      cap: 750,
+      refundWindow: 14,
+      conditions: [],
+      subTabs: ['Overview', 'Enrichment', 'Cardholder Preview'],
+      brand: brandFill(_id),
+      mono: initials(o.merchant || 'L'),
+    }, o);
+  }
+
+  // ---- HERO + detailed campaigns (PRD examples) -------------
+  const detailed = [
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Summer Grocery Cashback', cat: 'grocery',
+      status: 'pending', cashback: 10, budget: 180000, audience: 212640,
+      createdOn: '14 Jun 2026', received: '14 Jun, 10:48 GST', cap: 300,
+      start: '1 Jul 2026', end: '31 Aug 2026', refundWindow: 14, ref: 'MM-2606-A',
+      summary: [
+        ['t','10% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 300 per cardholder'], ['n',', on grocery baskets above AED 50 across the summer season.'],
+      ],
+      conditions: [
+        'Spends on groceries — AED 500+ per month',
+        'Shops groceries 4+ times per month',
+        'Spends at Spinneys, Lulu or Al Maya in last 90 days',
+      ],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Iftar Boost', cat: 'food',
+      status: 'pending', cashback: 15, budget: 120000, audience: 184210,
+      createdOn: '2 May 2026', received: '2 May, 09:14 GST', cap: 750,
+      start: '8 May 2026', end: '30 Jun 2026', refundWindow: 14, ref: 'NF-2604-A',
+      summary: [
+        ['t','15% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 750 per cardholder'], ['n',', served in-app to '],
+        ['t','184,210 frequent food-delivery spenders'], ['n',' for the Ramadan window.'],
+      ],
+      conditions: [
+        'Spends on food delivery — AED 300+ in last 30 days',
+        'Orders food delivery 6+ times per month',
+        'No spend at Marhaba Mart in last 60 days',
+      ],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Ramadan Pantry', cat: 'grocery',
+      status: 'pending', cashback: 8, budget: 200000, audience: 275400,
+      createdOn: '3 May 2026', received: '3 May, 11:02 GST', cap: 400,
+      start: '10 May 2026', end: '24 Jun 2026', refundWindow: 14, ref: 'CF-2605-B',
+      summary: [
+        ['t','8% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 400 per cardholder'], ['n',', for grocery baskets above AED 250 across the Ramadan pantry season.'],
+      ],
+      conditions: [
+        'Spends on groceries — AED 250+ per basket',
+        'Shops groceries weekly in last 30 days',
+        'Spends at Carrefour or hypermarkets in last 90 days',
+      ],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Eid Wardrobe', cat: 'fashion',
+      status: 'pending', cashback: 12, budget: 95000, audience: 142800,
+      createdOn: '4 May 2026', received: '4 May, 14:36 GST', cap: 300,
+      start: '12 May 2026', end: '15 Jun 2026', refundWindow: 21, ref: 'NM-2606-C',
+      summary: [
+        ['t','12% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 300 per cardholder'], ['n',', targeting fashion-active cardholders ahead of Eid.'],
+      ],
+      conditions: [
+        'Spends on fashion — AED 500+ in last 90 days',
+        'Makes 2+ fashion purchases per quarter',
+        'No spend at Marhaba Mart in last 45 days',
+      ],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Late Night Cravings', cat: 'food',
+      status: 'live', cashback: 14, budget: 150000, audience: 168900,
+      liveOn: '1 May 2026', createdOn: '24 Apr 2026', cap: 500,
+      start: '1 May 2026', end: '20 Jun 2026', refundWindow: 14, ref: 'TL-2604-D',
+      acceptedBy: 'Layla Haddad', acceptedAt: '28 Apr 2026 · 16:20 GST',
+      activated: 38947,
+      perf: { views: 96320, daysElapsed: 8, daysTotal: 50, wkActivated: 18, wkViews: 22 },
+      summary: [
+        ['t','14% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 500 per cardholder'], ['n',', on orders placed between 22:00–04:00 GST.'],
+      ],
+      conditions: ['Spends on food delivery — AED 200+ in last 30 days', 'Orders food delivery 8+ times per month', 'Spends after 22:00 GST in last 30 days'],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Tech Upgrade', cat: 'elec',
+      status: 'live', cashback: 6, budget: 320000, audience: 98400,
+      liveOn: '28 Apr 2026', createdOn: '20 Apr 2026', cap: 1000,
+      start: '28 Apr 2026', end: '28 Jun 2026', refundWindow: 30, ref: 'SD-2604-E',
+      acceptedBy: 'Layla Haddad', acceptedAt: '25 Apr 2026 · 10:05 GST',
+      activated: 11420,
+      perf: { views: 41200, daysElapsed: 12, daysTotal: 61, wkActivated: 9, wkViews: 12 },
+      summary: [
+        ['t','6% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 1,000 per cardholder'], ['n',', on electronics purchases above AED 1,500.'],
+      ],
+      conditions: ['Spends on electronics — AED 1,500+ in last 180 days', 'Made 1+ electronics purchase in last 6 months'],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Glow Season', cat: 'beauty',
+      status: 'completed', cashback: 10, budget: 80000, audience: 121000,
+      closedOn: '30 Apr 2026', activated: 82923, createdOn: '1 Mar 2026', cap: 250,
+      start: '15 Mar 2026', end: '30 Apr 2026', refundWindow: 14, ref: 'FC-2603-F',
+      acceptedBy: 'Omar Reyes', acceptedAt: '10 Mar 2026 · 09:40 GST',
+      perf: { views: 184500, daysTotal: 46 },
+      summary: [
+        ['t','10% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 250 per cardholder'], ['n',', across the spring beauty season.'],
+      ],
+      conditions: ['Spends on beauty — AED 300+ in last 90 days', 'Makes 3+ beauty purchases per quarter'],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Weekly Basket', cat: 'grocery',
+      status: 'completed', cashback: 5, budget: 140000, audience: 210500,
+      closedOn: '25 Apr 2026', activated: 156400, createdOn: '15 Feb 2026', cap: 200,
+      start: '1 Mar 2026', end: '25 Apr 2026', refundWindow: 14, ref: 'LL-2602-G',
+      acceptedBy: 'Layla Haddad', acceptedAt: '20 Feb 2026 · 13:15 GST',
+      perf: { views: 298700, daysTotal: 55 },
+      summary: [
+        ['t','5% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 200 per cardholder'], ['n',', on weekly grocery baskets.'],
+      ],
+      conditions: ['Spends on groceries — AED 150+ weekly', 'Shops groceries 4+ times per month'],
+    }),
+    mk({
+      merchant: 'Marhaba Mart', campaign: 'Back to School', cat: 'fashion',
+      status: 'rejected', cashback: 9, budget: 70000, audience: 88000,
+      rejectedOn: '29 Apr 2026', createdOn: '26 Apr 2026', cap: 75,
+      start: '5 May 2026', end: '5 Jun 2026', refundWindow: 14, ref: 'CP-2604-H',
+      rejectedBy: 'Omar Reyes', rejectedAt: '29 Apr 2026 · 15:48 GST',
+      rejectReasons: ['Cap too low', 'Off calendar'],
+      rejectNote: 'Cap of AED 75 is below our Q2 floor of AED 120, and the window clashes with an existing Eid push.',
+      summary: [
+        ['t','9% cashback'], ['n',' at '], ['t','Marhaba Mart'], ['n',', capped at '],
+        ['t','AED 75 per cardholder'], ['n',', for back-to-school apparel.'],
+      ],
+      conditions: ['Spends on fashion — AED 200+ in last 60 days', 'Spends on kids & baby in last 90 days'],
+    }),
+  ];
+
+  // ---- filler campaigns for pagination realism ---------------
+  const merchants = [
+    ['Amazon.ae','elec'], ['Mumzworld','home'], ['Eros Group','elec'], ['Nesto','grocery'],
+    ['Grand Hyper','grocery'], ['Apparel Group','fashion'], ['Jumbo','elec'], ['Spinneys','grocery'],
+    ['Magrudy\u2019s','home'], ['Cobone','travel'], ['Wadi','elec'], ['6th Street','fashion'],
+    ['SACOOR','fashion'], ['Bath & Body Works','beauty'], ['Tim Hortons','food'], ['KFC','food'],
+    ['Wild Wadi','travel'], ['Emaar Hospitality','travel'], ['Ace Hardware','home'], ['IKEA','home'],
+    ['Joi Gifts','home'], ['Letstango','elec'], ['Pottery Barn','home'], ['Rivoli','fashion'],
+    ['Babyshop','home'], ['Max Fashion','fashion'], ['Home Centre','home'], ['Lifestyle','fashion'],
+  ];
+  const campNames = [
+    'Spring Saver','Loyalty Lift','Weekend Burst','Festival Push','Cashback Sprint',
+    'New Customer Drive','Repeat Buyer','Summer Splash','Flash Reward','Premium Perks',
+    'Daily Deal','Mega Sale Boost','Members Only','Seasonal Surge','Bonus Round',
+    'Smart Spend','Reward Rush','Pay Day Push','Big Basket','Top-up Treat',
+  ];
+  function rnd(seed) { let x = Math.sin(seed * 99.13) * 10000; return x - Math.floor(x); }
+
+  const fillers = [];
+  let fi = 0;
+  // distribution to roughly hit KPI strip: pending 12, live 8, accepted/completed 11, rejected 2
+  const plan = [
+    ['pending', 9], ['live', 6], ['completed', 9], ['rejected', 0],
+  ];
+  plan.forEach(([status, n]) => {
+    for (let k = 0; k < n; k++) {
+      const m = merchants[fi % merchants.length];
+      const r = rnd(fi + 7);
+      const cb = 5 + Math.floor(rnd(fi + 1) * 12);
+      const budget = (40 + Math.floor(rnd(fi + 2) * 36)) * 5000;
+      const aud = 40000 + Math.floor(rnd(fi + 3) * 240000);
+      const cap = [150, 200, 250, 300, 400, 500, 750][Math.floor(rnd(fi + 4) * 7)];
+      const dayP = 1 + Math.floor(rnd(fi + 5) * 28);
+      const actRate = status === 'live' ? (0.08 + rnd(fi + 6) * 0.22) : (0.5 + rnd(fi + 6) * 0.35);
+      const activated = (status === 'live' || status === 'completed') ? Math.floor(aud * actRate) : undefined;
+      const views = activated != null ? Math.floor(activated * (1.8 + rnd(fi + 8) * 1.4)) : undefined;
+      const daysTotal = 40 + Math.floor(rnd(fi + 9) * 30);
+      const daysElapsed = Math.max(2, Math.floor(daysTotal * (0.1 + rnd(fi + 10) * 0.4)));
+      const c = mk({
+        merchant: 'Marhaba Mart', campaign: campNames[fi % campNames.length], cat: m[1],
+        status, cashback: cb, budget, audience: aud, cap, refundWindow: 14,
+        createdOn: `${dayP} Apr 2026`,
+        liveOn: status === 'live' ? `${dayP} Apr 2026` : undefined,
+        closedOn: status === 'completed' ? `${dayP} Apr 2026` : undefined,
+        rejectedOn: status === 'rejected' ? `${dayP} Apr 2026` : undefined,
+        activated,
+        start: `${dayP} May 2026`, end: `${dayP} Jun 2026`,
+        ref: `MM-26${(10 + fi)}`,
+        acceptedBy: 'Layla Haddad', acceptedAt: `${dayP} Apr 2026 · 12:00 GST`,
+        perf: status === 'live'
+          ? { views, daysElapsed, daysTotal, wkActivated: 6 + Math.floor(r * 16), wkViews: 8 + Math.floor(r * 20) }
+          : status === 'completed'
+          ? { views, daysTotal }
+          : undefined,
+        summary: [
+          ['t', cb + '% cashback'], ['n', ' at '], ['t', 'Marhaba Mart'], ['n', ', capped at '],
+          ['t', 'AED ' + cap + ' per cardholder'], ['n', ', for a ' + CAT[m[1]].label.toLowerCase() + ' campaign.'],
+        ],
+        conditions: [`Spends on ${CAT[m[1]].label.toLowerCase()} — AED ${cap}+ in last 60 days`, `Spends on ${CAT[m[1]].label.toLowerCase()} 3+ times in last 60 days`],
+      });
+      fillers.push(c);
+      fi++;
+    }
+  });
+
+  const campaigns = detailed.concat(fillers);
+
+  const byStatus = (s) => campaigns.filter(c => c.status === s);
+  const find = (id) => campaigns.find(c => c.id === id);
+
+  window.PULSE = {
+    campaigns, categories: CAT, byStatus, find,
+    counts: {
+      pending: byStatus('pending').length,
+      live: byStatus('live').length,
+      completed: byStatus('completed').length,
+      rejected: byStatus('rejected').length,
+    },
+  };
+})();
+
+  </script>
+
+<script type="text/babel" data-src="tweaks-panel.jsx">
+// @ds-adherence-ignore -- omelette starter scaffold (raw elements/hex/px by design)
+
+/* BEGIN USAGE */
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+// Exports (to window): useTweaks, TweaksPanel, TweakSection, TweakRow, TweakSlider,
+//   TweakToggle, TweakRadio, TweakSelect, TweakText, TweakNumber, TweakColor, TweakButton.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// TweakRadio is the segmented control for 2–3 short options (auto-falls-back to
+// TweakSelect past ~16/~10 chars per label); reach for TweakSelect directly when
+// options are many or long. For color tweaks always curate 3-4 options rather than
+// a free picker; an option can also be a whole 2–5 color palette (the stored value
+// is the array). The Tweak* controls are a floor, not a ceiling — build custom
+// controls inside the panel if a tweak calls for UI they don't cover.
+/* END USAGE */
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+</script>
+<script type="text/babel" data-src="icons.jsx">
+/* Icon set + small shared primitives for Lune Pulse.
+   Exports to window: Icon, fmtAED, fmtNum, abbrev, StatusPill, CatTag, MerchLogo */
+(function () {
+  const P = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const paths = {
+    grid:        <g {...P}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></g>,
+    spark:       <g {...P}><path d="M5 19V11M10 19V5M15 19v-6M20 19v-9"/></g>,
+    layers:      <g {...P}><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></g>,
+    receipt:     <g {...P}><path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3Z"/><path d="M9 8h6M9 12h6"/></g>,
+    book:        <g {...P}><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z"/><path d="M4 5v14"/></g>,
+    gear:        <g {...P}><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2l-.3-2.5h-4l-.3 2.5a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.3 2.5h4l.3-2.5a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5A7 7 0 0 0 19 12Z"/></g>,
+    chat:        <g {...P}><path d="M21 11.5a8 8 0 0 1-11.5 7.2L3 21l2.3-6.5A8 8 0 1 1 21 11.5Z"/></g>,
+    pulse:       <g {...P}><path d="M3 12h4l2.5-7 5 14 2.5-7H21"/></g>,
+    target:      <g {...P}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></g>,
+    bell:        <g {...P}><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></g>,
+    search:      <g {...P}><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></g>,
+    chevL:       <g {...P}><path d="m15 18-6-6 6-6"/></g>,
+    chevR:       <g {...P}><path d="m9 18 6-6-6-6"/></g>,
+    arrowL:      <g {...P}><path d="M19 12H5M12 19l-7-7 7-7"/></g>,
+    check:       <g {...P}><path d="M20 6 9 17l-5-5"/></g>,
+    checkCircle: <g {...P}><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></g>,
+    x:           <g {...P}><path d="M18 6 6 18M6 6l12 12"/></g>,
+    xCircle:     <g {...P}><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/></g>,
+    alert:       <g {...P}><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></g>,
+    info:        <g {...P}><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></g>,
+    lock:        <g {...P}><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></g>,
+    calendar:    <g {...P}><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9h17M8 3v4M16 3v4"/></g>,
+    coins:       <g {...P}><ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7"/><path d="M15 12.5c2.8-.2 5-1.4 5-3M15 17c2.8-.2 5-1.4 5-3"/><path d="M9 15v3c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></g>,
+    wallet:      <g {...P}><path d="M3 7a2 2 0 0 1 2-2h12v4"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3"/><path d="M21 11v4h-4a2 2 0 0 1 0-4h4Z"/></g>,
+    users:       <g {...P}><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 6M21 20a6 6 0 0 0-4.5-5.8"/></g>,
+    cap:         <g {...P}><path d="M12 3v18M5 8l7-5 7 5"/><rect x="4" y="8" width="16" height="4" rx="1"/></g>,
+    refund:      <g {...P}><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></g>,
+    eye:         <g {...P}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></g>,
+    clock:       <g {...P}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g>,
+    trend:       <g {...P}><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></g>,
+    inbox:       <g {...P}><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6l2-7Z"/></g>,
+    flag:        <g {...P}><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></g>,
+    send:        <g {...P}><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></g>,
+    sign:        <g {...P}><path d="M3 17c3-1 4-7 6-7s2 4 4 4 3-3 5-3"/><path d="M3 21h18"/></g>,
+    dot:         <g {...P}><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></g>,
+  };
+  function Icon({ name, size = 20, style, className }) {
+    return (
+      <svg viewBox="0 0 24 24" width={size} height={size} style={style} className={className} aria-hidden="true">
+        {paths[name] || null}
+      </svg>
+    );
+  }
+
+  const fmtNum = (n) => n.toLocaleString('en-US');
+  const fmtAED = (n) => 'AED ' + n.toLocaleString('en-US');
+  function abbrev(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1) + 'M';
+    if (n >= 1000) return Math.round(n / 1000) + 'k';
+    return String(n);
+  }
+
+  const STATUS_LABEL = { pending: 'Review Pending', live: 'Live', accepted: 'Accepted', completed: 'Completed', rejected: 'Rejected' };
+  function StatusPill({ status }) {
+    return (
+      <span className={'pill ' + status}>
+        <span className="pdot" />
+        {STATUS_LABEL[status] || status}
+      </span>
+    );
+  }
+
+  function CatTag({ cat }) {
+    const c = window.PULSE.categories[cat];
+    if (!c) return null;
+    const src = (window.__resources && window.__resources[c.icon]) || c.icon;
+    return (
+      <span className="cat-tag">
+        <span className="cat-ic" style={{ '--src': `url(${src})`, background: c.color }} />
+        {c.label}
+      </span>
+    );
+  }
+
+  function MerchLogo({ c, size }) {
+    var s = size || 38;
+    var g = Math.round(s * 0.6);
+    return (
+      <span className="merch-logo" style={{ width: s, height: s, background: 'linear-gradient(145deg,#0A634D,#13A07C)' }} title="Marhaba Mart">
+        <svg width={g} height={g} viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M16.2 17.4v-1.7a3.8 3.8 0 0 1 7.6 0v1.7" stroke="#FBF3E4" strokeWidth="2.3" strokeLinecap="round" />
+          <path d="M12.6 16.6h14.8a1.7 1.7 0 0 1 1.695 1.86l-.95 11A2.2 2.2 0 0 1 25.95 31.4H14.05a2.2 2.2 0 0 1-2.19-1.94l-.95-11A1.7 1.7 0 0 1 12.6 16.6Z" fill="#FBF3E4" />
+          <path d="M20 21.3c-1.7.45-2.65 2-2.3 3.6.32 1.46 1.78 2.45 3.36 2.2a2.85 2.85 0 0 1-2.02-2.06 2.78 2.78 0 0 1 .96-2.74 4 4 0 0 0-.001-1Z" fill="#0A634D" />
+        </svg>
+      </span>
+    );
+  }
+
+  Object.assign(window, { Icon, fmtNum, fmtAED, abbrev, StatusPill, CatTag, MerchLogo, STATUS_LABEL });
+})();
+
+</script>
+<script type="text/babel" data-src="shell.jsx">
+/* LuneHub shell: left nav + topbar. Exports window.Shell */
+(function () {
+  const { Icon } = window;
+  const { useState, useEffect, useRef } = React;
+
+  function Sidebar({ pendingCount, bankName, onHome }) {
+    return (
+      <aside className="sidebar">
+        <a href="../index.html" title="Back to demo home" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+          <div className="brand-mark">
+            <div className="brand-logo">
+              <img src={(window.__resources && window.__resources['ds/brand/lune-icon-dark.svg']) || 'ds/brand/lune-icon-dark.svg'} alt="Lune" />
+            </div>
+            <div>
+              <div className="brand-name">Lune</div>
+              <div className="brand-sub">{bankName || 'Demo Environment'}</div>
+            </div>
+          </div>
+        </a>
+
+        <div className="nav-label">Products</div>
+        <button className="nav-prod active nav-item" style={{ gap: 11 }} onClick={onHome}>
+          <span className="prod-mark"><img src={(window.__resources && window.__resources['ds/brand/lune-icon-light.svg']) || 'ds/brand/lune-icon-light.svg'} alt="" /></span>
+          Pulse
+        </button>
+        <button className="nav-item nav-child active" style={{ marginTop: 2 }} onClick={onHome}>
+          Campaign Manager
+          {pendingCount ? <span className="nav-badge">{pendingCount}</span> : null}
+        </button>
+      </aside>
+    );
+  }
+
+  function Topbar({ crumbs, onCrumb, onSearch, notifications }) {
+    const [open, setOpen] = useState(false);
+    const wrapRef = useRef(null);
+    useEffect(() => {
+      function onDoc(e) { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); }
+      document.addEventListener('mousedown', onDoc);
+      return () => document.removeEventListener('mousedown', onDoc);
+    }, []);
+    const n = notifications || [];
+    return (
+      <header className="topbar">
+        <div className="crumbs">
+          {crumbs.map((c, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <span className="sep"><Icon name="chevR" size={13} /></span>}
+              {i === crumbs.length - 1
+                ? <b>{c}</b>
+                : <button className="crumb-link" onClick={() => onCrumb && onCrumb(i)}>{c}</button>}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="topbar-actions">
+          <button className="icon-btn" title="Search campaigns" onClick={onSearch}><Icon name="search" size={18} /></button>
+          <div className="notif-wrap" ref={wrapRef}>
+            <button className="icon-btn" title="Notifications" onClick={() => setOpen(o => !o)}>
+              <Icon name="bell" size={18} />
+              {n.length > 0 && <span className="notif-dot" />}
+            </button>
+            {open && (
+              <div className="notif-pop">
+                <div className="notif-head">Notifications</div>
+                {n.length === 0 ? (
+                  <div className="notif-empty">You’re all caught up.</div>
+                ) : (
+                  <div className="notif-list">
+                    {n.map(item => (
+                      <button key={item.id} className="notif-item" onClick={() => { setOpen(false); item.onClick(); }}>
+                        <span className="notif-ic"><Icon name="inbox" size={16} /></span>
+                        <span className="notif-body">
+                          <b>{item.title}</b>
+                          <small>{item.sub}</small>
+                        </span>
+                        <Icon name="chevR" size={15} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  function Shell({ crumbs, onCrumb, onHome, onSearch, notifications, pendingCount, bankName, children }) {
+    return (
+      <div className="app">
+        <Sidebar pendingCount={pendingCount} bankName={bankName} onHome={onHome} />
+        <main className="main">
+          <Topbar crumbs={crumbs} onCrumb={onCrumb} onSearch={onSearch} notifications={notifications} />
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  Object.assign(window, { Shell });
+})();
+
+</script>
+<script type="text/babel" data-src="list.jsx">
+/* Campaign Manager — list screen. Exports window.ListScreen */
+(function () {
+  const { Icon, StatusPill, CatTag, MerchLogo, fmtAED, fmtNum, abbrev } = window;
+  const { useState, useMemo } = React;
+
+  const TABS = [
+    { id: 'pending', label: 'Review Pending' },
+    { id: 'live', label: 'Live' },
+    { id: 'completed', label: 'Completed' },
+    { id: 'rejected', label: 'Rejected' },
+  ];
+
+  const KPIS = [
+    { key: 'pending', label: 'Pending', accent: '#C79212' },
+    { key: 'live', label: 'Live now', accent: 'var(--brand)' },
+    { key: 'completed', label: 'Accepted', accent: '#3E7E96' },
+    { key: 'rejected', label: 'Rejected', accent: '#D23A52' },
+  ];
+
+  // column config per tab
+  function columns(tab, searching) {
+    const merch = { key: 'merch', label: 'Merchant · Campaign' };
+    const cb = { key: 'cb', label: 'Cash back', num: false };
+    const status = { key: 'status', label: 'Status' };
+    const cat = { key: 'cat', label: 'Category' };
+    const recv = { key: 'recv', label: 'Received', num: true };
+    if (tab === 'completed') {
+      return [merch, cb, { key: 'activated', label: 'Activated', num: true }, { key: 'closedOn', label: 'Closed on' }, cat, status];
+    }
+    if (tab === 'rejected') {
+      return [merch, cb, { key: 'budget', label: 'Budget (AED)', num: true }, { key: 'rejectedOn', label: 'Rejected on' }, cat, status];
+    }
+    const dateCol = tab === 'live'
+      ? { key: 'liveOn', label: 'Live on' }
+      : { key: 'createdOn', label: 'Created on' };
+    const cols = [merch, cb, { key: 'budget', label: 'Budget (AED)', num: true }, { key: 'aud', label: 'Audience', num: true }, dateCol, cat, status];
+    if (searching) cols.splice(5, 0, recv);
+    return cols;
+  }
+
+  function Cell({ col, c }) {
+    switch (col.key) {
+      case 'merch':
+        return (
+          <td>
+            <div className="merch-cell">
+              <MerchLogo c={c} />
+              <div style={{ minWidth: 0 }}>
+                <div className="merch-name">{c.merchant}</div>
+                <div className="merch-camp">{c.campaign}</div>
+              </div>
+            </div>
+          </td>
+        );
+      case 'cb': return <td><span className="cashback-val tnum">{c.cashback}%</span></td>;
+      case 'budget': return <td className="num tnum">{fmtNum(c.budget)}</td>;
+      case 'aud': return <td className="num tnum">{fmtNum(c.audience)}</td>;
+      case 'recv': return <td className="num tnum">{abbrev(c.audience)}</td>;
+      case 'activated': return <td className="num tnum">{fmtNum(c.activated || 0)}</td>;
+      case 'createdOn': return <td>{c.createdOn}</td>;
+      case 'liveOn': {
+        const days = Math.ceil((new Date(c.end) - Date.now()) / 86400000);
+        return <td>{c.liveOn}<div className="cell-sub">{days > 1 ? 'ends in ' + days + 'd' : days === 1 ? 'ends tomorrow' : 'ending today'}</div></td>;
+      }
+      case 'closedOn': return <td>{c.closedOn}</td>;
+      case 'rejectedOn': return <td>{c.rejectedOn}</td>;
+      case 'cat': return <td><CatTag cat={c.cat} /></td>;
+      case 'status': return <td><StatusPill status={c.status} /></td>;
+      default: return <td />;
+    }
+  }
+
+  const PAGE_SIZE = 8;
+  const SORT_FIELDS = { cb: 'cashback', budget: 'budget', aud: 'audience', activated: 'activated', recv: 'audience' };
+
+  function exportCsv(rows, tab) {
+    const head = ['Merchant', 'Campaign', 'Category', 'Status', 'Cashback %', 'Budget AED', 'Audience', 'Activated', 'Start', 'End'];
+    const lines = [head.join(',')].concat(rows.map(c => [
+      c.merchant, c.campaign, (window.PULSE.categories[c.cat] || {}).label || c.cat, c.status,
+      c.cashback, c.budget, c.audience, c.activated || '', c.start, c.end
+    ].map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')));
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pulse-campaigns-' + tab + '.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  function ListScreen({ onOpen }) {
+    const [tab, setTab] = useState('pending');
+    const [query, setQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [sort, setSort] = useState(null);
+    const counts = window.PULSE.counts;
+
+    const searching = query.trim().length > 0;
+
+    const rows = useMemo(() => {
+      let list = window.PULSE.byStatus(tab);
+      if (searching) {
+        const q = query.toLowerCase();
+        list = window.PULSE.campaigns.filter(c =>
+          (c.merchant + ' ' + c.campaign).toLowerCase().includes(q));
+      }
+      if (sort) {
+        const f = SORT_FIELDS[sort.key];
+        list = [...list].sort((a, b) => (((a[f] || 0) - (b[f] || 0))) * (sort.dir === 'asc' ? 1 : -1));
+      }
+      return list;
+    }, [tab, query, searching, sort]);
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    const safePage = Math.min(page, totalPages);
+    const pageRows = rows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+    const cols = columns(tab, searching);
+
+    function changeTab(id) { setTab(id); setPage(1); setQuery(''); setSort(null); }
+    function onSearch(v) { setQuery(v); setPage(1); }
+    function toggleSort(key) {
+      setPage(1);
+      setSort(s => (s && s.key === key)
+        ? (s.dir === 'desc' ? { key, dir: 'asc' } : null)
+        : { key, dir: 'desc' });
+    }
+
+    return (
+      <div className="page">
+        <div className="page-head">
+          <div className="page-title">Campaign Manager</div>
+          <div className="page-desc">Dive into real-time analytics for your ongoing campaigns and evaluate offer effectiveness.</div>
+        </div>
+
+        {/* KPI strip */}
+        <div className="kpi-strip">
+          {KPIS.map(k => (
+            <div key={k.key} className="kpi" style={{ '--kpi-accent': k.accent }}>
+              <div className="kpi-label">{k.label}</div>
+              <div className="kpi-value tnum">
+                {String(counts[k.key]).padStart(2, '0')}
+              </div>
+              <div className="kpi-foot">
+                <span className="kpi-dot" />
+                {k.key === 'pending' && 'Awaiting your decision'}
+                {k.key === 'live' && 'Matching transactions now'}
+                {k.key === 'completed' && 'Signed off to date'}
+                {k.key === 'rejected' && 'Returned to Lune'}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* list card */}
+        <div className="list-card">
+          <div className="toolbar">
+            <div className="tabs">
+              {TABS.map(t => (
+                <button key={t.id} className={'tab' + (tab === t.id && !searching ? ' active' : '')} onClick={() => changeTab(t.id)}>
+                  {t.label}
+                  <span className="cnt tnum">{counts[t.id]}</span>
+                </button>
+              ))}
+            </div>
+            <div className="search">
+              <Icon name="search" size={16} />
+              <input
+                id="pulse-search"
+                placeholder="Search merchant or campaign…"
+                value={query}
+                onChange={e => onSearch(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-ghost csv-btn" title="Export the current list as CSV"
+                    onClick={() => exportCsv(rows, searching ? 'search' : tab)} disabled={rows.length === 0}>
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2.5v7.5M8 10 5.2 7.2M8 10l2.8-2.8M3 13.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              Export
+            </button>
+          </div>
+
+          {pageRows.length === 0 ? (
+            <div className="empty-state">
+              <Icon name="inbox" size={44} />
+              <div style={{ fontWeight: 600, color: 'var(--ink-2)' }}>No campaigns found</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>
+                {searching ? `Nothing matches “${query}”.` : 'This queue is empty right now.'}
+              </div>
+            </div>
+          ) : (
+            <table className="tbl">
+              <thead>
+                <tr>{cols.map(col => {
+                  const sortable = !!SORT_FIELDS[col.key] || col.key === 'cb';
+                  const active = sort && sort.key === col.key;
+                  return (
+                    <th key={col.key}
+                        className={(col.num ? 'num' : '') + (sortable ? ' th-sort' : '') + (active ? ' th-sorted' : '')}
+                        onClick={sortable ? () => toggleSort(col.key) : undefined}
+                        title={sortable ? 'Sort by ' + col.label : undefined}>
+                      {col.label}
+                      {sortable && <span className="sort-ind">{active ? (sort.dir === 'asc' ? '\u2191' : '\u2193') : '\u2195'}</span>}
+                    </th>
+                  );
+                })}</tr>
+              </thead>
+              <tbody>
+                {pageRows.map(c => (
+                  <tr key={c.id} tabIndex={0} onClick={() => onOpen(c.id)}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c.id); } }}>
+                    {cols.map(col => <Cell key={col.key} col={col} c={c} />)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {rows.length > 0 && (
+            <div className="pager">
+              <div className="pager-info">
+                Showing <b className="tnum">{pageRows.length}</b> of <b className="tnum">{rows.length}</b>
+                {searching ? ' results' : ' campaigns'}
+              </div>
+              <div className="pager-ctl">
+                <button className="pg-btn" disabled={safePage === 1} onClick={() => setPage(safePage - 1)}>
+                  <Icon name="chevL" size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map(p => (
+                  <button key={p} className={'pg-btn' + (p === safePage ? ' active' : '')} onClick={() => setPage(p)}>{p}</button>
+                ))}
+                {totalPages > 5 && <span className="pager-info">…</span>}
+                <button className="pg-btn" disabled={safePage === totalPages} onClick={() => setPage(safePage + 1)}>
+                  <Icon name="chevR" size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  Object.assign(window, { ListScreen });
+})();
+
+</script>
+<script type="text/babel" data-src="detail.jsx">
+/* Campaign Detail — review / live monitor / archive. Exports window.DetailScreen */
+(function () {
+  const { Icon, StatusPill, CatTag, MerchLogo, fmtAED, fmtNum } = window;
+  const { useState } = React;
+
+  function Summary({ c }) {
+    return (
+      <div className="block">
+        <div className="section-label">Offer summary</div>
+        <div className="summary-card">
+          {c.summary.map((seg, i) => seg[0] === 't'
+            ? <b key={i}>{seg[1]}</b>
+            : <React.Fragment key={i}>{seg[1]}</React.Fragment>)}
+        </div>
+      </div>
+    );
+  }
+
+  function Terms({ c }) {
+    return (
+      <div className="block">
+        <div className="section-label">Key terms</div>
+        <div className="term-grid">
+          <div className="term">
+            <div className="term-label"><Icon name="coins" size={15} />Cashback</div>
+            <div className="term-value tnum">{c.cashback}<small>%</small></div>
+            <div className="term-sub">of qualifying spend</div>
+          </div>
+          <div className="term">
+            <div className="term-label"><Icon name="wallet" size={15} />Total budget</div>
+            <div className="term-value tnum">AED {fmtNum(c.budget)}</div>
+            <div className="term-sub">merchant-funded</div>
+          </div>
+          <div className="term">
+            <div className="term-label"><Icon name="cap" size={15} />Cap / cardholder</div>
+            <div className="term-value tnum">AED {fmtNum(c.cap)}</div>
+            <div className="term-sub">maximum reward each</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function Schedule({ c }) {
+    return (
+      <div className="block">
+        <div className="section-label">Schedule</div>
+        <div className="term-grid">
+          <div className="term">
+            <div className="term-label"><Icon name="calendar" size={15} />Start date</div>
+            <div className="term-value" style={{ fontSize: 22 }}>{c.start}</div>
+            <div className="term-sub">goes live 00:00 GST</div>
+          </div>
+          <div className="term">
+            <div className="term-label"><Icon name="calendar" size={15} />End date</div>
+            <div className="term-value" style={{ fontSize: 22 }}>{c.end}</div>
+            <div className="term-sub">auto-closes</div>
+          </div>
+          <div className="term">
+            <div className="term-label"><Icon name="refund" size={15} />Refund window</div>
+            <div className="term-value tnum">{c.refundWindow}<small> days</small></div>
+            <div className="term-sub">hold before payout</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function Audience({ c }) {
+    const bars = [0.45, 0.7, 1, 0.85, 0.6, 0.4, 0.55, 0.3];
+    return (
+      <div className="block">
+        <div className="section-label">Audience</div>
+        <div className="aud-card">
+          <div className="aud-head">
+            <Icon name="users" size={26} style={{ color: 'var(--brand)' }} />
+            <div>
+              <div className="aud-num tnum">{fmtNum(c.audience)} <small>eligible cardholders</small></div>
+              <div style={{ fontSize: 13, color: 'var(--ink-3)', marginTop: 2 }}>matched on the targeting conditions below</div>
+            </div>
+            <div className="aud-bars">
+              {bars.map((h, i) => <i key={i} className={h >= 0.8 ? 'on' : ''} style={{ height: (h * 44) + 'px' }} />)}
+            </div>
+          </div>
+          <div className="cond-list">
+            {c.conditions.map((cond, i) => (
+              <div key={i} className="cond">
+                <Icon name="target" size={17} />
+                <span>{cond}</span>
+                <span className="ro"><Icon name="lock" size={12} />read-only</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function MetricsStrip({ c }) {
+    if (c.status !== 'live' && c.status !== 'completed') return null;
+    const live = c.status === 'live';
+    const p = c.perf || {};
+    const activated = c.activated || 0;
+    const rate = c.audience ? activated / c.audience : 0;
+    const views = p.views || 0;
+    const viewFrac = c.audience ? Math.min(1, views / (c.audience * 2)) : 0;
+
+    const items = [
+      { label: 'Eligible audience', value: fmtNum(c.audience), sub: 'matched cardholders',
+        color: 'var(--st-accepted)', frac: 1, delta: null },
+      { label: 'Offer activations', value: fmtNum(activated), sub: live ? 'opted in so far' : 'opted in total',
+        color: 'var(--brand)', frac: rate, delta: live ? p.wkActivated : null },
+      { label: 'Activation rate', value: (rate * 100).toFixed(1) + '%', sub: 'of eligible audience',
+        color: 'var(--brand)', frac: rate, delta: null },
+      { label: 'Offer views', value: fmtNum(views), sub: 'in-app impressions',
+        color: 'var(--st-accepted)', frac: viewFrac, delta: live ? p.wkViews : null },
+    ];
+
+    return (
+      <div className="block">
+        <div className="section-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="trend" size={14} style={{ color: 'var(--brand)' }} />
+          Campaign performance
+          <span style={{ marginLeft: 'auto', fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
+            {live
+              ? (p.daysElapsed > 0
+                  ? `Day ${p.daysElapsed} of ${p.daysTotal} · ends ${c.end}`
+                  : `Signed off · goes live ${c.start}`)
+              : `Ran ${p.daysTotal} days · closed ${c.closedOn}`}
+          </span>
+        </div>
+        <div className="metrics" style={{ '--mcols': 4 }}>
+          {items.map((m, i) => (
+            <div key={i} className="metric">
+              <div className="metric-label">{m.label}</div>
+              <div className="metric-value tnum">{m.value}</div>
+              {m.delta != null ? (
+                <div className="delta up"><Icon name="trend" size={13} />+{m.delta}% this week</div>
+              ) : (
+                <div className="delta flat">{m.sub}</div>
+              )}
+              <div className="metric-track"><i style={{ width: (m.frac * 100) + '%', background: m.color }} /></div>
+            </div>
+          ))}
+        </div>
+        <div className="note info" style={{ maxWidth: 680 }}>
+          <Icon name="info" size={17} />
+          <span>Cashback settlement — amounts paid, pending and refunded — is processed directly by the issuing bank and is not tracked in Pulse during alpha. Pulse reports in-app engagement only.</span>
+        </div>
+      </div>
+    );
+  }
+
+  function CardholderPreview({ c }) {
+    const cat = window.PULSE.categories[c.cat];
+    return (
+      <div>
+        <div className="note info" style={{ maxWidth: 560, marginTop: 0, marginBottom: 24 }}>
+          <Icon name="eye" size={17} />
+          <span>This is how the offer renders inside the cardholder’s banking app. Bank reviewers cannot edit creative or copy — it is published by the merchant.</span>
+        </div>
+        <div className="phone-wrap">
+          <div className="phone">
+            <div className="phone-notch" />
+            <div className="phone-screen">
+              <div className="offer-hero" style={{ background: c.brand }}>
+                <div className="offer-badge">{c.cashback}% CASHBACK</div>
+                <div style={{ fontSize: 22, fontWeight: 800, marginTop: 10, letterSpacing: '-.02em' }}>{c.merchant}</div>
+                <div style={{ fontSize: 14, opacity: .9 }}>{c.campaign}</div>
+              </div>
+              <div className="offer-body">
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                  <span className="cat-tag" style={{ background: '#fff' }}><span className="cat-dot" style={{ background: cat.color }} />{cat.label}</span>
+                </div>
+                <p style={{ fontSize: 14.5, lineHeight: 1.55, color: 'var(--ink-2)' }}>
+                  Get <b style={{ color: 'var(--brand-strong)' }}>{c.cashback}% back</b> on every eligible purchase at {c.merchant}, up to <b>AED {fmtNum(c.cap)}</b>. Cashback posts after a {c.refundWindow}-day window.
+                </p>
+                <div style={{ marginTop: 18, padding: '14px 16px', background: 'var(--brand-soft)', borderRadius: 12, fontSize: 13, color: 'var(--brand-strong)', fontWeight: 600 }}>
+                  Valid {c.start} – {c.end}
+                </div>
+                <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 16 }}>Activate offer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function Banner({ c }) {
+    if (c.status === 'live') {
+      return (
+        <div className="banner banner-live">
+          <Icon name="pulse" size={20} />
+          <div><b>Live</b> · campaign ending on {c.end}.</div>
+          <div className="audit">Accepted {c.acceptedAt}<br />by {c.acceptedBy}</div>
+        </div>
+      );
+    }
+    if (c.status === 'completed') {
+      return (
+        <div className="banner banner-done">
+          <Icon name="checkCircle" size={20} />
+          <div><b>Completed</b> · campaign ended {c.closedOn}.</div>
+          <div className="audit">Accepted {c.acceptedAt}<br />by {c.acceptedBy}</div>
+        </div>
+      );
+    }
+    if (c.status === 'rejected') {
+      return (
+        <div className="banner banner-rej">
+          <Icon name="xCircle" size={20} />
+          <div><b>Rejected</b> · returned to Lune Admin Portal.</div>
+          <div className="audit">Rejected {c.rejectedAt} by {c.rejectedBy}<br />Reasons communicated to Lune by email.</div>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  function RejectRecord({ c }) {
+    return (
+      <div className="block">
+        <div className="section-label">Rejection record</div>
+        <div className="aud-card">
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-3)', marginBottom: 10 }}>Reasons selected</div>
+          <div className="chip-grid" style={{ marginTop: 0 }}>
+            {(c.rejectReasons || []).map(r => (
+              <span key={r} className="chip on" style={{ cursor: 'default' }}><Icon name="check" size={14} />{r}</span>
+            ))}
+          </div>
+          {c.rejectNote && (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-3)', margin: '20px 0 8px' }}>Note to Lune</div>
+              <div className="cond" style={{ alignItems: 'flex-start' }}>
+                <Icon name="flag" size={17} />
+                <span style={{ fontStyle: 'italic' }}>“{c.rejectNote}”</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function DetailScreen({ c, onBack, onAccept, onReject, onOpenMonitor, onJump }) {
+    const [sub, setSub] = useState('Overview');
+    const cat = window.PULSE.categories[c.cat];
+    const isPending = c.status === 'pending';
+
+    return (
+      <div className="page">
+        <div className="detail-wrap">
+          <button className="back-link" onClick={onBack}>
+            <Icon name="arrowL" size={16} />Back to Campaign Manager
+          </button>
+
+          <div className="detail-head">
+            <MerchLogo c={c} size={56} />
+            <div className="dh-text">
+              <div className="dh-title">
+                {c.merchant} · {c.campaign}
+                <StatusPill status={c.status} />
+              </div>
+              <div className="dh-meta">
+                <CatTag cat={c.cat} />
+                {c.received && <><span className="sep" /><span><b style={{ color: 'var(--ink)', fontWeight: 600 }}>Received</b> {c.received}</span></>}
+                <span className="sep" /><span className="mono">REF {c.ref}</span>
+              </div>
+            </div>
+            <div className="dh-actions">
+              <button className={'btn ' + (sub === 'Cardholder Preview' ? 'btn-primary' : 'btn-ghost')} onClick={() => setSub('Cardholder Preview')}>
+                <Icon name="eye" size={17} />Cardholder Preview
+              </button>
+            </div>
+          </div>
+
+          {/* sub-tabs (only meaningful on review) */}
+          <div className="subtabs">
+            {c.subTabs.map(s => (
+              <button key={s} className={'subtab' + (sub === s ? ' active' : '')} onClick={() => setSub(s)}>{s}</button>
+            ))}
+          </div>
+
+          {sub === 'Cardholder Preview' ? (
+            <CardholderPreview c={c} />
+          ) : sub === 'Enrichment' ? (
+            <div className="block">
+              <Audience c={c} />
+              <div className="note info" style={{ maxWidth: 560 }}>
+                <Icon name="info" size={17} />
+                <span>Targeting conditions are computed by Lune Enrichment from this bank’s transaction history. They are read-only on the bank side.</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Banner c={c} />
+              {c.status === 'rejected' && <RejectRecord c={c} />}
+              <MetricsStrip c={c} />
+              <Summary c={c} />
+              <Terms c={c} />
+              <Schedule c={c} />
+              <Audience c={c} />
+            </>
+          )}
+
+          {c.status === 'live' && sub === 'Overview' && (
+            <div style={{ marginTop: 8 }}>
+              <button className="btn btn-ghost" onClick={onOpenMonitor}><Icon name="trend" size={17} />Open full live monitor</button>
+            </div>
+          )}
+        </div>
+
+        {/* decision footer — only review pending */}
+        {isPending && (
+          <div className="decision">
+            <div className="decision-text">
+              <div className="dl"><Icon name="alert" size={15} />Decision required</div>
+              <div className="ds">This action is logged and cannot be undone.</div>
+            </div>
+            {(() => {
+              const q = window.PULSE.byStatus('pending');
+              const i = q.findIndex(x => x.id === c.id);
+              if (i < 0 || !onJump) return null;
+              return (
+                <div className="queue-nav">
+                  <button className="pg-btn" disabled={i === 0} onClick={() => onJump(q[i - 1].id)} title="Previous pending campaign"><Icon name="chevL" size={16} /></button>
+                  <span className="queue-pos tnum">{i + 1} of {q.length} pending</span>
+                  <button className="pg-btn" disabled={i === q.length - 1} onClick={() => onJump(q[i + 1].id)} title="Next pending campaign"><Icon name="chevR" size={16} /></button>
+                </div>
+              );
+            })()}
+            <div className="decision-actions">
+              <button className="btn btn-danger btn-lg" onClick={onReject}><Icon name="x" size={17} />Reject</button>
+              <button className="btn btn-primary btn-lg" onClick={onAccept}><Icon name="check" size={17} />Accept</button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  Object.assign(window, { DetailScreen });
+})();
+
+</script>
+<script type="text/babel" data-src="modals.jsx">
+/* Accept & Reject modals + confirmation screens. Exports window.AcceptModal, RejectModal, ConfirmScreen */
+(function () {
+  const { Icon, fmtNum } = window;
+  const { useState } = React;
+
+  function Overlay({ treatment, onClose, children }) {
+    return (
+      <div className={'overlay' + (treatment === 'sheet' ? ' sheet' : '')} onClick={onClose}>
+        <div className="modal" onClick={e => e.stopPropagation()}>{children}</div>
+      </div>
+    );
+  }
+
+  function goLiveLabel(c) {
+    // "08 MAY · 00:00 GST"
+    const parts = (c.start || '').split(' ');
+    const d = (parts[0] || '').padStart(2, '0');
+    const m = (parts[1] || '').toUpperCase().slice(0, 3);
+    return `${d} ${m} · 00:00 GST`;
+  }
+
+  function AcceptModal({ c, treatment, onClose, onConfirm }) {
+    return (
+      <Overlay treatment={treatment} onClose={onClose}>
+        <div className="modal-head">
+          <div className="modal-ico go"><Icon name="check" size={21} /></div>
+          <div>
+            <div className="modal-title">Accept this campaign?</div>
+            <div className="modal-sub">
+              You’re accepting <b style={{ color: 'var(--ink)' }}>{c.merchant} · {c.campaign}</b> for distribution to <b style={{ color: 'var(--ink)' }}>{fmtNum(c.audience)}</b> cardholders. The offer goes live at 00:00 GST on {c.start}.
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}><Icon name="x" size={18} /></button>
+        </div>
+        <div className="modal-body">
+          <div className="recap">
+            <div className="recap-item hl">
+              <div className="rl">Goes live</div>
+              <div className="rv tnum">{goLiveLabel(c)}</div>
+            </div>
+            <div className="recap-item">
+              <div className="rl">Cashback</div>
+              <div className="rv tnum">{c.cashback}%</div>
+            </div>
+            <div className="recap-item">
+              <div className="rl">Budget</div>
+              <div className="rv tnum">AED {fmtNum(c.budget)}</div>
+            </div>
+            <div className="recap-item">
+              <div className="rl">Audience</div>
+              <div className="rv tnum">{fmtNum(c.audience)}</div>
+            </div>
+          </div>
+          <div className="note warn">
+            <Icon name="alert" size={17} />
+            <span><b>Note:</b> this action cannot be undone. To pause post-launch, contact your Lune partnership lead.</span>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={onConfirm}><Icon name="sign" size={17} />Accept & Sign off</button>
+        </div>
+      </Overlay>
+    );
+  }
+
+  const REASONS = ['Cap too low', 'Audience overlap', 'Brand mismatch', 'Off calendar', 'Compliance', 'Other'];
+
+  function RejectModal({ c, treatment, onClose, onConfirm }) {
+    const [picked, setPicked] = useState([]);
+    const [note, setNote] = useState('');
+    function toggle(r) {
+      setPicked(p => p.includes(r) ? p.filter(x => x !== r) : [...p, r]);
+    }
+    return (
+      <Overlay treatment={treatment} onClose={onClose}>
+        <div className="modal-head">
+          <div className="modal-ico stop"><Icon name="arrowL" size={21} /></div>
+          <div>
+            <div className="modal-title">Reject &amp; return to Lune?</div>
+            <div className="modal-sub">
+              The campaign will be returned to Lune. Please share a reason — it helps refine future dispatches.
+            </div>
+          </div>
+          <button className="modal-close" onClick={onClose}><Icon name="x" size={18} /></button>
+        </div>
+        <div className="modal-body">
+          <div className="field-label">Reason <span className="opt">· select any that apply</span></div>
+          <div className="chip-grid">
+            {REASONS.map(r => (
+              <button key={r} className={'chip' + (picked.includes(r) ? ' on' : '')} onClick={() => toggle(r)}>
+                {picked.includes(r) && <Icon name="check" size={14} />}{r}
+              </button>
+            ))}
+          </div>
+          <div className="field-label">Add a note <span className="opt">· optional, shared with Lune</span></div>
+          <textarea
+            className="field"
+            placeholder="e.g. Cap of AED 75 is below our Q2 floor of AED 120…"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+          />
+          <div className="note info">
+            <Icon name="info" size={17} />
+            <span>Your reasons are emailed to Lune ops. All merchant communication is mediated by Lune in alpha.</span>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-danger-solid" onClick={() => onConfirm({ reasons: picked, note })}>
+            <Icon name="send" size={16} />Reject &amp; Return
+          </button>
+        </div>
+      </Overlay>
+    );
+  }
+
+  function ConfirmScreen({ kind, c, result, onViewAll, onMonitor }) {
+    if (kind === 'accept') {
+      return (
+        <div className="page">
+          <div className="confirm-wrap">
+            <div className="confirm-ico ok"><Icon name="checkCircle" size={40} /></div>
+            <div className="confirm-title display">Campaign accepted.</div>
+            <div className="confirm-sub">
+              {c.merchant} · {c.campaign} is signed off and scheduled. It goes live automatically at the start of the offer window.
+            </div>
+            <div className="confirm-card">
+              <div className="confirm-row">
+                <span className="cl">Status</span>
+                <span className="cv"><span className="pill accepted"><span className="pdot" />Accepted</span></span>
+              </div>
+              <div className="confirm-row">
+                <span className="cl">Goes live</span>
+                <span className="cv tnum">{goLiveLabel(c)}</span>
+              </div>
+              <div className="confirm-row">
+                <span className="cl">Reference</span>
+                <span className="cv mono">{c.ref}</span>
+              </div>
+              <div className="confirm-row">
+                <span className="cl">Signed off by</span>
+                <span className="cv">Layla Haddad · just now</span>
+              </div>
+            </div>
+            <div className="confirm-actions">
+              <button className="btn btn-ghost btn-lg" onClick={onViewAll}>View all campaigns</button>
+              <button className="btn btn-primary btn-lg" onClick={onMonitor}><Icon name="trend" size={17} />Open live monitor</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // reject
+    return (
+      <div className="page">
+        <div className="confirm-wrap">
+          <div className="confirm-ico rej"><Icon name="arrowL" size={40} /></div>
+          <div className="confirm-title display">Returned to Lune.</div>
+          <div className="confirm-sub">
+            {c.merchant} · {c.campaign} has been returned to the Lune Admin Portal. Your reasons were emailed to Lune ops.
+          </div>
+          <div className="confirm-card">
+            <div className="confirm-row">
+              <span className="cl">Status</span>
+              <span className="cv"><span className="pill rejected"><span className="pdot" />Rejected</span></span>
+            </div>
+            {result && result.reasons && result.reasons.length > 0 && (
+              <div className="confirm-row">
+                <span className="cl">Reasons</span>
+                <span className="cv" style={{ fontWeight: 600 }}>{result.reasons.join(', ')}</span>
+              </div>
+            )}
+            <div className="confirm-row">
+              <span className="cl">Rejected by</span>
+              <span className="cv">Layla Haddad · just now</span>
+            </div>
+          </div>
+          <div className="confirm-actions">
+            <button className="btn btn-primary btn-lg" onClick={onViewAll}>View all campaigns</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  Object.assign(window, { AcceptModal, RejectModal, ConfirmScreen });
+})();
+
+</script>
+<script type="text/babel" data-src="app.jsx">
+/* App root: routing, accept/reject mutations, Tweaks. Exports nothing (mounts). */
+(function () {
+  const { useState, useEffect, useMemo } = React;
+  const { Shell, ListScreen, DetailScreen, AcceptModal, RejectModal, ConfirmScreen } = window;
+  const { useTweaks, TweaksPanel, TweakSection, TweakColor, TweakSelect, TweakRadio, TweakText } = window;
+
+  // ---- theme palettes (brand, strong, deep, soft, tint, accent) ----
+  const PALETTES = {
+    Emerald: ['#2F8C82', '#27786F', '#002E2A', 'rgba(47,140,130,0.10)', '#F7FAF9', '#469A93'],
+    Forest:  ['#1F8A4D', '#15703D', '#0C3A22', 'rgba(31,138,77,0.10)', '#F6FAF7', '#46B96A'],
+    Teal:    ['#0C9486', '#0A7468', '#06302C', 'rgba(12,148,134,0.10)', '#F4FAF9', '#46A89B'],
+    Spring:  ['#33A65B', '#258048', '#123E26', 'rgba(51,166,91,0.10)', '#F5FAF6', '#5FC07E'],
+  };
+  const FONTS = {
+    'Plus Jakarta': ["'Plus Jakarta Sans', system-ui, sans-serif"],
+    'Hanken Grotesk': ["'Hanken Grotesk', system-ui, sans-serif"],
+    'Instrument':   ["'Instrument Sans', system-ui, sans-serif"],
+  };
+
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "bankName": "Dubai Retail Group",
+    "palette": "Emerald",
+    "font": "Plus Jakarta",
+    "density": "regular",
+    "corners": "soft",
+    "modalStyle": "centered"
+  }/*EDITMODE-END*/;
+
+  function applyTheme(t) {
+    const root = document.documentElement;
+    const p = PALETTES[t.palette] || PALETTES.Emerald;
+    root.style.setProperty('--brand', p[0]);
+    root.style.setProperty('--brand-strong', p[1]);
+    root.style.setProperty('--brand-deep', p[2]);
+    root.style.setProperty('--brand-soft', p[3]);
+    root.style.setProperty('--brand-tint', p[4]);
+    root.style.setProperty('--accent', p[5]);
+    root.style.setProperty('--st-live', p[0]);
+    const f = FONTS[t.font] || FONTS['Plus Jakarta'];
+    root.style.setProperty('--font-ui', f[0]);
+    root.setAttribute('data-density', t.density);
+    root.setAttribute('data-corners', t.corners);
+  }
+
+  function liveCounts() {
+    const b = window.PULSE.byStatus;
+    return {
+      pending: b('pending').length,
+      live: b('live').length,
+      completed: b('completed').length + b('accepted').length,
+      rejected: b('rejected').length,
+    };
+  }
+
+  function App() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    const [route, setRoute] = useState({ name: 'list' });
+    const [modal, setModal] = useState(null); // 'accept' | 'reject' | null
+    const [, force] = useState(0);
+
+    useEffect(() => { applyTheme(t); }, [t.palette, t.font, t.density, t.corners]);
+
+    // keep KPI counts live across mutations
+    window.PULSE.counts = liveCounts();
+
+    const current = route.id ? window.PULSE.find(route.id) : null;
+
+    function open(id) { setRoute({ name: 'detail', id }); scrollTop(); }
+    function back() { setRoute({ name: 'list' }); scrollTop(); }
+
+    const modalRef = React.useRef(null);
+    modalRef.current = modal;
+    React.useEffect(() => {
+      function onKey(e) {
+        if (e.key !== 'Escape') return;
+        if (modalRef.current) { setModal(null); return; }
+        setRoute(r => (r.name === 'detail' ? { name: 'list' } : r));
+      }
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }, []);
+    function scrollTop() { const m = document.querySelector('.main'); if (m) m.scrollTop = 0; }
+
+    function confirmAccept() {
+      const c = current;
+      c.status = 'live';
+      c.liveOn = c.start;
+      c.acceptedBy = 'Layla Haddad';
+      c.acceptedAt = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' GST';
+      c.activated = 0;
+      c.perf = { views: 0, daysElapsed: 0, daysTotal: 50 };
+      setModal(null);
+      setRoute({ name: 'confirm', id: c.id, kind: 'accept' });
+      scrollTop();
+    }
+    function confirmReject(result) {
+      const c = current;
+      c.status = 'rejected';
+      c.rejectedOn = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      c.rejectedBy = 'Layla Haddad';
+      c.rejectedAt = c.rejectedOn + ' · ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' GST';
+      c.rejectReasons = result.reasons;
+      c.rejectNote = result.note;
+      setModal(null);
+      setRoute({ name: 'confirm', id: c.id, kind: 'reject', result });
+      scrollTop();
+    }
+
+    const crumbs = route.name === 'list'
+      ? ['Pulse', 'Campaign Manager']
+      : route.name === 'confirm'
+        ? ['Pulse', 'Campaign Manager', route.kind === 'accept' ? 'Accepted' : 'Returned']
+        : ['Pulse', 'Campaign Manager', current ? current.merchant : 'Campaign'];
+
+    function goSearch() {
+      setRoute({ name: 'list' });
+      scrollTop();
+      setTimeout(() => {
+        const el = document.getElementById('pulse-search');
+        if (el) el.focus();
+      }, 60);
+    }
+
+    const notifications = window.PULSE.byStatus('pending').slice(0, 4).map(c => ({
+      id: c.id,
+      title: `${c.merchant} · ${c.campaign}`,
+      sub: `New campaign awaiting review · ${c.received || c.createdOn}`,
+      onClick: () => open(c.id),
+    }));
+
+    return (
+      <Shell
+        crumbs={crumbs}
+        onCrumb={(i) => { if (i <= 1) back(); }}
+        onHome={back}
+        onSearch={goSearch}
+        notifications={notifications}
+        pendingCount={window.PULSE.counts.pending}
+        bankName={t.bankName}
+      >
+        {route.name === 'list' && <ListScreen onOpen={open} />}
+
+        {route.name === 'detail' && current && (
+          <DetailScreen
+            c={current}
+            onJump={open}
+            onBack={back}
+            onAccept={() => setModal('accept')}
+            onReject={() => setModal('reject')}
+            onOpenMonitor={() => { force(x => x + 1); }}
+          />
+        )}
+
+        {route.name === 'confirm' && current && (
+          <ConfirmScreen
+            kind={route.kind}
+            c={current}
+            result={route.result}
+            onViewAll={back}
+            onMonitor={() => { setRoute({ name: 'detail', id: current.id }); scrollTop(); }}
+          />
+        )}
+
+        {modal === 'accept' && current && (
+          <AcceptModal c={current} treatment={t.modalStyle} onClose={() => setModal(null)} onConfirm={confirmAccept} />
+        )}
+        {modal === 'reject' && current && (
+          <RejectModal c={current} treatment={t.modalStyle} onClose={() => setModal(null)} onConfirm={confirmReject} />
+        )}
+
+        <TweaksPanel>
+          <TweakSection label="Demo" />
+          <TweakText label="Account name" value={t.bankName} placeholder="e.g. Dubai Retail Group"
+            onChange={v => setTweak('bankName', v)} />
+          <TweakSection label="Brand" />
+          <TweakColor label="Green tone" value={PALETTES[t.palette] || PALETTES.Emerald}
+            options={Object.keys(PALETTES).map(k => PALETTES[k])}
+            onChange={arr => {
+              const name = Object.keys(PALETTES).find(k => PALETTES[k][0] === arr[0]) || 'Emerald';
+              setTweak('palette', name);
+            }} />
+          <TweakSection label="Typography" />
+          <TweakSelect label="Font" value={t.font}
+            options={Object.keys(FONTS)} onChange={v => setTweak('font', v)} />
+          <TweakSection label="Layout" />
+          <TweakRadio label="Density" value={t.density}
+            options={['compact', 'regular', 'comfy']} onChange={v => setTweak('density', v)} />
+          <TweakRadio label="Corners" value={t.corners}
+            options={['sharp', 'soft', 'round']} onChange={v => setTweak('corners', v)} />
+          <TweakRadio label="Modal style" value={t.modalStyle}
+            options={['centered', 'sheet']} onChange={v => setTweak('modalStyle', v)} />
+        </TweaksPanel>
+      </Shell>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+})();
+
+</script>
+</body>
+</html>
